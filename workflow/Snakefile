@@ -1,0 +1,19 @@
+
+rule prep_data:
+    input: 
+        "/datastore/homes3/s1804374/kai_lambda/fastqgz_files.fastq.gz/{sample}.fastq.gz"
+    output: 
+        "data/{sample}.fastq.gz"
+    shell: 
+        "cp {input} {output}"
+
+rule porechop:
+    input: 
+        "data/{sample}.fastq.gz"
+
+    output: 
+        "data/pc_{sample}.fastq.gz"
+
+    shell: 
+        "porechop -i {input} -o {output}"
+
