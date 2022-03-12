@@ -4,14 +4,17 @@ conda install graphviz
 
 ### Directory Structure
 
-|-- data
-|-- LICENSE
-|-- README.md
-|-- report
-`-- workflow
-    `-- Snakefile
+```
+├── dag.svg
+├── data
+├── LICENSE
+├── README.md
+├── report
+└── workflow
+    └── Snakefile
+```
 
-### snakemake
+### Snakemake
 snakemake -c8 data/pc_FAR12603_pass_255c3309_11.fastq.gz 
 
 1. prepare sample data
