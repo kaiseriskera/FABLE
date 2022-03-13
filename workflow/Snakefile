@@ -1,4 +1,5 @@
-
+# todos: move to config.xml
+# export _JAVA_OPTIONS="-Xmx1g"
 rule prep_data:
     input: 
         "/datastore/homes3/s1804374/kai_lambda/fastqgz_files.fastq.gz/{sample}.fastq.gz"
@@ -10,10 +11,18 @@ rule prep_data:
 rule porechop:
     input: 
         "data/{sample}.fastq.gz"
-
     output: 
         "data/pc_{sample}.fastq.gz"
-
     shell: 
         "porechop -i {input} -o {output}"
+
+rule fastqc:
+    input:
+        "data/pc_{sample}.fastq.gz"
+    output:
+        "report/pc_{sample}_fastqc.html",
+        "report/pc_{sample}_fastqc.zip"
+    shell:
+        "fastqc --threads 8 --outdir report {input}"
+
 
