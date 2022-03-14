@@ -5,7 +5,7 @@ conda active snakemake
 ```
 make sure your snakemake environment includes the followings:
 ```bash
-conda install graphviz
+conda install -c bioconda graphviz nanoplot nanofilt
 ```
 
 ### Directory Structure
@@ -23,7 +23,7 @@ conda install graphviz
 ### Snakemake
 To execute:
 ```bash
-snakemae -c8 report/pc_FAR12603_pass_255c3309_11_fastqc.html
+$ snakemake -c8 report/PCNF_A_NanoPlot.html report/pc_A_fastqc.html 
 ```
 
 1. prepare sample data
@@ -33,11 +33,17 @@ snakemae -c8 report/pc_FAR12603_pass_255c3309_11_fastqc.html
 
 3. fastq from porchop output
 
+4. nanofilt 
+
+5. NanoPlot
+
+Todos: some errors generated due to output file missing, seems like the output rules problem.
+
 
 ### DAG Flow
 To generate DAG:
 ```bash
- snakemake --dag -c8 data/pc_FAR12603_pass_255c3309_11.fastq.gz | dot -Tsvg > dag.svg
+$ snakemake --dag report/PCNF_A_NanoPlot.html report/pc_A_fastqc.html | dot -Tsvg > dag.svg
  ```
 <p align="left"><img src="dag.svg" alt="DAG" width="400"></p>
 

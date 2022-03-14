@@ -37,10 +37,10 @@ rule nanoplot:
     input:
         "data/PCNF_{sample}.fastq.gz"
     output:
-        "report/PCNF_{sample}_NanoPlot.html"
+        "report/PCNF_{sample}_NanoPlot.html",
         "report/PCNF_{sample}_NanoStats.txt"
     shell:
-        "Nanoplot --threads 6 --fastq {input} --outdir report"
+        "NanoPlot --threads 6 --fastq {input} --outdir report"
       
 
 
