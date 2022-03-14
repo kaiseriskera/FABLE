@@ -24,5 +24,23 @@ rule fastqc:
         "report/pc_{sample}_fastqc.zip"
     shell:
         "fastqc --threads 8 --outdir report {input}"
+        
+rule nanofilt:
+    input: 
+        "data/pc_{sample}.fastq.gz"
+    output:
+        "data/PCNF_{sample}.fastq.gz"
+    shell:
+        "gunzip -c {input} | NanoFilt | gzip > {output}"
+    
+rule nanoplot:
+    input:
+        "data/PCNF_{sample}.fastq.gz"
+    output:
+        "report/PCNF_{sample}_NanoPlot.html"
+        "report/PCNF_{sample}_NanoStats.txt"
+    shell:
+        "Nanoplot --threads 6 --fastq {input} --outdir report"
+      
 
 
