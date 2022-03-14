@@ -33,7 +33,7 @@ $ snakemake -c8 report/PCNF_A_NanoPlot.html report/pc_A_fastqc.html
 
 3. fastq from porchop output
 
-4. nanofilt 
+4. NanoFilt 
 
 5. NanoPlot
 
