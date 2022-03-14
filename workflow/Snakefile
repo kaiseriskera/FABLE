@@ -35,10 +35,11 @@ rule nanofilt:
     
 rule nanoplot:
     input:
-        "data/PCNF_{sample}.fastq.gz"
+        "data/PCNF_{sample}.fastq.gz",
+        "data/pc_{sample}.fastq.gz"
     output:
-        "report/PCNF_{sample}_NanoPlot.html",
-        "report/PCNF_{sample}_NanoStats.txt"
+        "report/NanoPlot-report.html",
+        "report/NanoStats.txt"
     shell:
         "NanoPlot --threads 6 --fastq {input} --outdir report"
       
