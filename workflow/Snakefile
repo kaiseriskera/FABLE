@@ -31,7 +31,7 @@ rule nanofilt:
     output:
         "data/PCNF_{sample}.fastq.gz"
     shell:
-        "gunzip -c {input} | NanoFilt | gzip > {output}"
+        "gunzip -c {input} | NanoFilt -q 10 | gzip > {output}"
     
 rule nanoplot:
     input:
