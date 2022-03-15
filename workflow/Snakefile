@@ -42,5 +42,11 @@ rule nanoplot:
     shell:
         "NanoPlot --threads 6 --fastq {input} --outdir report"
       
-
-
+rule vulcan:
+    input:
+        "data/PCNF_{sample}.fastq.gz"
+    output:
+        "vulcan_PCNF_{sample}.bam"
+    shell:
+        "vulcan -ont -t 10 -i {input} -r {reference} -o {output}"
+        
