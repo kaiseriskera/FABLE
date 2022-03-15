@@ -50,17 +50,18 @@ rule vulcan:
     shell:
         "vulcan -ont -t 10 -i {input} -r {reference} -o {output}"
 
-rule bam_sort:
+rule bam_index:
     input:
         "data/vulcan_PCNF_{sample}.bam"
     output:
-        "data/sorted_vulcan_PCNF_{sample}.bam"
+        "data/idx_vulcan_PCNF_{sample}.bam.bai",
+        "data/idx_vulcan_PCNF_{sample}.bam"
     shell:
         "samtools sort {input} -o {output}"
 
 rule NanoPlot:
     input:
-        "data/sorted_vulcan_PCNF_{sample}.bam"
+        "data/idx_vulcan_PCNF_{sample}.bam"
     output:
         "report/vulcan_PCNF_{sample}_NanoPlot-report.html",
         "report/vulcan_PCNF_{sample}_NanoStats.txt"
