@@ -1,7 +1,7 @@
 # ngs_bench
 ### Pre-requisite
 ```bash
-conda active snakemake 
+conda activate snakemake 
 ```
 make sure your snakemake environment includes the followings:
 ```bash
