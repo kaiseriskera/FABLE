@@ -1,5 +1,6 @@
 # todos: move to config.xml
 # export _JAVA_OPTIONS="-Xmx1g"
+
 rule prep_data:
     input: 
         "/datastore/homes3/s1804374/kai_lambda/fastqgz_files.fastq.gz/{sample}.fastq.gz"
@@ -58,14 +59,14 @@ rule bam_index:
     input:
         "data/vulcan_PCNF_{sample}_90.bam"
     output:
-        #"data/idx_vulcan_PCNF_{sample}.bam.bai",
-        "data/idx_vulcan_PCNF_{sample}.bam"
+        "data/vulcan_PCNF_{sample}.bam.bai",
+        #"data/vulcan_PCNF_{sample}.bam"
     shell:
-        "samtools sort {input} -o {output}"
+        "samtools index {input}"
 
 rule NanoPlot:
     input:
-        "data/idx_vulcan_PCNF_{sample}.bam"
+        "data/vulcan_PCNF_{sample}_90.bam"
     output:
         "report/vulcan_PCNF_{sample}_NanoPlot-report.html",
         "report/vulcan_PCNF_{sample}_NanoStats.txt"
