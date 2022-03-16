@@ -23,7 +23,7 @@ conda install -c bioconda graphviz nanoplot nanofilt
 ### Snakemake
 To execute:
 ```bash
-$ snakemake -c8 report/PCNF_A_NanoPlot.html report/pc_A_fastqc.html 
+snakemake -c8 report/vulcan_PCNF_A_NanoStats.txt report/PCNF_A_fastqc.zip
 ```
 
 1. prepare sample data
@@ -43,7 +43,7 @@ Todos: some errors generated due to output file missing, seems like the output r
 ### DAG Flow
 To generate DAG:
 ```bash
-$ snakemake --dag report/PCNF_A_NanoPlot.html report/pc_A_fastqc.html | dot -Tsvg > dag.svg
+snakemake --dag -c8 report/vulcan_PCNF_A_NanoStats.txt report/PCNF_A_fastqc.zip | dot -Tsvg > dag.svg
  ```
 <p align="left"><img src="dag.svg" alt="DAG" width="400"></p>
 

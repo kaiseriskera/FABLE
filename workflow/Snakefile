@@ -41,20 +41,24 @@ rule nanoplot:
         "report/PCNF_{sample}_NanoStats.txt"
     shell:
         "NanoPlot -t 8 --fastq {input} --outdir report"
-      
+
 rule vulcan:
     input:
-        "data/PCNF_{sample}.fastq.gz"
+        ref="/datastore/homes3/s1804374/kai_lambda/J02459.fasta",
+        fastq="data/PCNF_{sample}.fastq.gz"
     output:
-        "data/vulcan_PCNF_{sample}.bam"
+        "data/vulcan_PCNF_{sample}_90.bam"
+    params:
+        prefix="data/vulcan_PCNF_{sample}"
     shell:
-        "vulcan -ont -t 10 -i {input} -r {reference} -o {output}"
+        "vulcan -ont -t 10 -r {input.ref} -i {input.fastq} -o {params.prefix}"
+        #should create another rule for | samtools view -Sb - > {output}??
 
 rule bam_index:
     input:
-        "data/vulcan_PCNF_{sample}.bam"
+        "data/vulcan_PCNF_{sample}_90.bam"
     output:
-        "data/idx_vulcan_PCNF_{sample}.bam.bai",
+        #"data/idx_vulcan_PCNF_{sample}.bam.bai",
         "data/idx_vulcan_PCNF_{sample}.bam"
     shell:
         "samtools sort {input} -o {output}"
@@ -65,5 +69,8 @@ rule NanoPlot:
     output:
         "report/vulcan_PCNF_{sample}_NanoPlot-report.html",
         "report/vulcan_PCNF_{sample}_NanoStats.txt"
+    params:
+        prefix="vulcan_PCNF_{sample}_",
+        outdir="report"
     shell:
-        "NanoPlot -t 8 --bam {input}"
+        "NanoPlot -t 8 --bam {input} -p {params.prefix} -o {params.outdir}"
