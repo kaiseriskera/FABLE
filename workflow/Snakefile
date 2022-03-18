@@ -1,5 +1,12 @@
-# todos: move to config.xml
-# export _JAVA_OPTIONS="-Xmx1g"
+configfile: "config/config.yaml"
+
+OPT = config["rule_opt"]
+
+rule all:
+    input:
+        "report/PCNF_A_fastqc.html",
+        "report/PCNF_A_NanoStats.txt",
+        "report/final_PCNF_A_NanoPlot-report.html"
 
 rule prep_data:
     input: 
@@ -23,7 +30,7 @@ rule nanofilt:
     output:
         "data/PCNF_{sample}.fastq.gz"
     shell:
-        "gunzip -c {input} | NanoFilt -q 10 | gzip > {output}"
+        "gunzip -c {input} | NanoFilt -q 10 --headcrop 10| gzip > {output}"
 
 rule fastqc:
     input:
@@ -34,44 +41,102 @@ rule fastqc:
     shell:
         "fastqc --threads 8 --outdir report {input}"
     
-rule nanoplot:
+rule pre_aln_NanoPlot:
     input:
         "data/PCNF_{sample}.fastq.gz"
     output:
         "report/PCNF_{sample}_NanoPlot-report.html",
         "report/PCNF_{sample}_NanoStats.txt"
-    shell:
-        "NanoPlot -t 8 --fastq {input} --outdir report"
-
-rule vulcan:
-    input:
-        ref="/datastore/homes3/s1804374/kai_lambda/J02459.fasta",
-        fastq="data/PCNF_{sample}.fastq.gz"
-    output:
-        "data/vulcan_PCNF_{sample}_90.bam"
     params:
-        prefix="data/vulcan_PCNF_{sample}"
-    shell:
-        "vulcan -ont -t 10 -r {input.ref} -i {input.fastq} -o {params.prefix}"
-        #should create another rule for | samtools view -Sb - > {output}??
-
-rule bam_index:
-    input:
-        "data/vulcan_PCNF_{sample}_90.bam"
-    output:
-        "data/vulcan_PCNF_{sample}.bam.bai",
-        #"data/vulcan_PCNF_{sample}.bam"
-    shell:
-        "samtools index {input}"
-
-rule NanoPlot:
-    input:
-        "data/vulcan_PCNF_{sample}_90.bam"
-    output:
-        "report/vulcan_PCNF_{sample}_NanoPlot-report.html",
-        "report/vulcan_PCNF_{sample}_NanoStats.txt"
-    params:
-        prefix="vulcan_PCNF_{sample}_",
+        prefix="PCNF_{sample}_",
         outdir="report"
     shell:
-        "NanoPlot -t 8 --bam {input} -p {params.prefix} -o {params.outdir}"
+        "NanoPlot -t 8 --fastq {input} --outdir {params.outdir} -p {params.prefix}"
+
+if OPT == 'vulcan':
+    rule vulcan:
+        input:
+            ref="/datastore/homes3/s1804374/kai_lambda/J02459.fasta",
+            fastq="data/PCNF_{sample}.fastq.gz"
+        output:
+            "data/vulcan_PCNF_{sample}_90.bam"
+        params:
+            prefix="data/vulcan_PCNF_{sample}"
+        shell:
+            "vulcan -ont -t 10 -r {input.ref} -i {input.fastq} -o {params.prefix}"
+    rule vulcan_bam_index:
+        input:
+            "data/vulcan_PCNF_{sample}_90.bam",
+        output:
+            "data/vulcan_PCNF_{sample}_90.bam.bai",
+        shell:
+            "samtools index {input}"
+
+    rule vulcan_NanoPlot:
+        input:
+            "data/vulcan_PCNF_{sample}_90.bam",
+        output:
+            "report/vulcan_PCNF_{sample}_NanoPlot-report.html",
+            "report/vulcan_PCNF_{sample}_NanoStats.txt",
+        params:
+            prefix="vulcan_PCNF_{sample}_",
+            outdir="report"
+        shell:
+            "NanoPlot -t 8 --bam {input} -p {params.prefix} -o {params.outdir}"
+
+    #To dos: workaround
+    rule vulcan_final_report:
+        input:
+            "report/vulcan_PCNF_{sample}_NanoPlot-report.html"
+        output:
+            "report/final_PCNF_{sample}_NanoPlot-report.html"
+        shell:
+            "cp {input} {output}"
+        
+else:
+    rule minimap2:
+        input:
+            ref="/datastore/homes3/s1804374/kai_lambda/J02459.fasta",
+            fastq="data/PCNF_{sample}.fastq.gz"
+        output:
+            "data/mm2_PCNF_{sample}.sam"
+        shell:
+            "minimap2 -ax map-ont {input.ref} {input.fastq} > {output}"
+
+    rule sam_to_bam:
+        input:
+            "data/mm2_PCNF_{sample}.sam"
+        output:
+            "data/mm2_PCNF_{sample}.bam"
+        shell:
+            "samtools sort {input} -o {output}"
+            
+    rule mm2_bam_index:
+        input:
+           "data/mm2_PCNF_{sample}.bam"
+        output:
+            "data/mm2_PCNF_{sample}.bam.bai"
+        shell:
+            "samtools index {input}"
+
+    rule mm2_NanoPlot:
+        input:
+            "data/mm2_PCNF_{sample}.bam"
+        output:
+            "report/mm2_PCNF_{sample}_NanoPlot-report.html",
+            "report/mm2_PCNF_{sample}_NanoStats.txt"
+        params:
+            prefix="mm2_PCNF_{sample}_",
+            outdir="report"
+        shell:
+            "NanoPlot -t 8 --bam {input} -p {params.prefix} -o {params.outdir}"
+
+    #To dos: workaround to simplify the command line input to snakemake
+    rule mm2_final_report:
+        input:
+            "report/mm2_PCNF_{sample}_NanoPlot-report.html"
+        output:
+            "report/final_PCNF_{sample}_NanoPlot-report.html"
+        shell:
+            "cp {input} {output}"
+    

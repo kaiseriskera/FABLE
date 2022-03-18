@@ -21,30 +21,23 @@ conda install -c bioconda graphviz nanoplot nanofilt
 ```
 
 ### Snakemake
-To execute:
+To execute with vulcan path
 ```bash
-snakemake -c8 report/vulcan_PCNF_A_NanoStats.txt report/PCNF_A_fastqc.zip
+snakemake --config rule_opt="vulcan" -c8 
+```
+To execute with minimap2 path
+```bash
+snakemake --config rule_opt="mm2" -c8 
 ```
 
-1. prepare sample data
-   copy fastq file (temporary hardcoded to kai_lambda/fastqgz_files.fastq.gz) to the snakemake data directory
-
-2. porechop from sample data
-
-3. fastq from porchop output
-
-4. NanoFilt 
-
-5. NanoPlot
-
-Todos: some errors generated due to output file missing, seems like the output rules problem.
-
-
 ### DAG Flow
-To generate DAG:
+To generate DAGs:
 ```bash
-snakemake --dag -c8 report/vulcan_PCNF_A_NanoStats.txt report/PCNF_A_fastqc.zip | dot -Tsvg > dag.svg
- ```
-<p align="left"><img src="dag.svg" alt="DAG" width="400"></p>
-
+snakemake --config rule_opt="mm2" -c8 --dag | dot -Tsvg > dag_mm2.svg 
+snakemake --config rule_opt="vulcan" -c8 --dag | dot -Tsvg > dag_vulcan.svg
+ ```    
+<p align="left">
+  <img src="dag_vulcan.svg" width="400" />
+  <img src="dag_mm2.svg" width="400" />
+</p>
 
