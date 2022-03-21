@@ -5,8 +5,8 @@ data_src = config["raw_data"]
 
 rule all:
     input:
-        "report/PCNF_A_fastqc.html",
-        "report/PCNF_A_NanoStats.txt",
+        "report/pre-aln_PCNF_A_fastqc.html",
+        "report/pre-aln_PCNF_A_NanoStats.txt",
         "report/final_PCNF_A_NanoPlot-report.html"
 
 rule prep_data:
