@@ -6,9 +6,9 @@ ref_genome = config["reference"]
 
 rule all:
     input:
-        "report/pre-aln_PCNF_A_NanoPlot-report.html",
-        "report/aligned_A_NanoPlot-report.html",
-        "report/PCNF_{sample}_fastqc.zip"
+        "report/PCNF_A_fastqc.html",
+        "report/PCNF_A_NanoPlot-report.html",
+        "report/aligned_A_NanoPlot-report.html"
 
 rule prep_data:
     input: 
@@ -16,13 +16,15 @@ rule prep_data:
     output: 
         "data/{sample}.fastq.gz"
     shell: 
-        "ln -s {input} {output}"
+        "ln -sf {input} {output}"
 
 rule porechop:
     input: 
         "data/{sample}.fastq.gz"
     output: 
         "data/pc_{sample}.fastq.gz"
+    benchmark:
+        "benchmarks/PoreChop/{sample}.txt"
     shell: 
         "porechop -i {input} -o {output}"
         
@@ -34,6 +36,8 @@ rule nanofilt:
     params:
         quality="10",
         headcrop="10"
+    benchmark:
+        "benchmarks/NanoFilt/{sample}.txt"
     shell:
         "gunzip -c {input} | NanoFilt -q {params.quality} --headcrop {params.headcrop} | gzip > {output}"
 
@@ -44,6 +48,8 @@ rule fastqc:
         "report/PCNF_{sample}_fastqc.html",
         "report/PCNF_{sample}_fastqc.zip"
     threads: 5
+    benchmark:
+        "benchmarks/fastqc/{sample}.txt"
     shell:
         "fastqc --threads {threads} --outdir report {input}"
     
@@ -51,12 +57,14 @@ rule pre_aln_NanoPlot:
     input:
         "data/PCNF_{sample}.fastq.gz"
     output:
-        "report/pre-aln_PCNF_{sample}_NanoPlot-report.html",
-        "report/pre-aln_PCNF_{sample}_NanoStats.txt"
+        "report/PCNF_{sample}_NanoPlot-report.html",
+        "report/PCNF_{sample}_NanoStats.txt"
     params:
-        prefix="pre-aln_PCNF_{sample}_",
+        prefix="PCNF_{sample}_",
         outdir="report"
     threads: 8 
+    benchmark:
+        "benchmarks/Pre-alignment_NanoPlot/{sample}.txt"
     shell:
         "NanoPlot -t {threads} --fastq {input} --outdir {params.outdir} -p {params.prefix}"
 
@@ -64,19 +72,24 @@ if OPT == 'vulcan':
     rule vulcan:
         input:
             ref = ref_genome,
-            fastq="data/PCNF_{sample}.fastq.gz",            
+            fastq="data/PCNF_{sample}.fastq.gz"
         output:
             "data/vulcan_PCNF_{sample}_90.bam"
         params:
             prefix="data/vulcan_PCNF_{sample}"
         threads: 10
+        benchmark:
+            "benchmarks/Vulcan/{sample}.txt"
         shell:
             "vulcan -ont -t {threads} -r {input.ref} -i {input.fastq} -o {params.prefix}"
+    
     rule vulcan_bam_index:
         input:
             "data/vulcan_PCNF_{sample}_90.bam",
         output:
             "data/vulcan_PCNF_{sample}_90.bam.bai",
+        benchmark:
+            "benchmarks/vulcan_bam_index/{sample}.txt"
         shell:
             "samtools index {input}"
 
@@ -90,6 +103,8 @@ if OPT == 'vulcan':
             prefix="vulcan_PCNF_{sample}_",
             outdir="report"
         threads: 8
+        benchmark:
+            "benchmarks/Post-alignment_vulcan_NanoPlot/{sample}.txt"
         shell:
             "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
 
@@ -106,9 +121,11 @@ else:
     rule minimap2:
         input:
             ref = ref_genome,
-            fastq="data/PCNF_{sample}.fastq.gz",
+            fastq="data/PCNF_{sample}.fastq.gz"
         output:
             "data/mm2_PCNF_{sample}.sam"
+        benchmark:
+            "benchmarks/Minimap2/{sample}.txt"
         shell:
             "minimap2 -ax map-ont {input.ref} {input.fastq} > {output}"
 
@@ -117,6 +134,8 @@ else:
             "data/mm2_PCNF_{sample}.sam"
         output:
             "data/mm2_PCNF_{sample}.bam"
+        benchmark:
+            "benchmarks/mm2_sam_to_bam/{sample}.txt"
         shell:
             "samtools sort {input} -o {output}"
             
@@ -125,6 +144,8 @@ else:
             "data/mm2_PCNF_{sample}.bam"
         output:
             "data/mm2_PCNF_{sample}.bam.bai"
+        benchmark:
+            "benchmarks/mm2_bam_index/{sample}.txt"
         shell:
             "samtools index {input}"
 
@@ -138,6 +159,8 @@ else:
             prefix="mm2_PCNF_{sample}_",
             outdir="report"
         threads: 8
+        benchmark:
+            "benchmarks/Post-alignment_mm2_NanoPlot/{sample}.txt"
         shell:
             "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
 
