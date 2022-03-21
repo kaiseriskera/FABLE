@@ -1,6 +1,7 @@
 configfile: "config/config.yaml"
 
 OPT = config["rule_opt"]
+data_src = config["raw_data"]
 
 rule all:
     input:
@@ -10,11 +11,11 @@ rule all:
 
 rule prep_data:
     input: 
-        "/datastore/homes3/s1804374/kai_lambda/fastqgz_files.fastq.gz/{sample}.fastq.gz"
+        data_src
     output: 
         "data/{sample}.fastq.gz"
     shell: 
-        "cp {input} {output}"
+        "ln -s {input} {output}"
 
 rule porechop:
     input: 
@@ -29,29 +30,34 @@ rule nanofilt:
         "data/pc_{sample}.fastq.gz"
     output:
         "data/PCNF_{sample}.fastq.gz"
+    params:
+        quality="10",
+        headcrop="10"
     shell:
-        "gunzip -c {input} | NanoFilt -q 10 --headcrop 10| gzip > {output}"
+        "gunzip -c {input} | NanoFilt -q {params.quality} --headcrop {params.headcrop} | gzip > {output}"
 
 rule fastqc:
     input:
         "data/PCNF_{sample}.fastq.gz"
     output:
-        "report/PCNF_{sample}_fastqc.html",
-        "report/PCNF_{sample}_fastqc.zip"
+        "report/pre-aln_PCNF_{sample}_fastqc.html",
+        "report/pre-aln_PCNF_{sample}_fastqc.zip"
+    threads: 8
     shell:
-        "fastqc --threads 8 --outdir report {input}"
+        "fastqc --threads {threads} --outdir report {input}"
     
 rule pre_aln_NanoPlot:
     input:
         "data/PCNF_{sample}.fastq.gz"
     output:
-        "report/PCNF_{sample}_NanoPlot-report.html",
-        "report/PCNF_{sample}_NanoStats.txt"
+        "report/pre-aln_PCNF_{sample}_NanoPlot-report.html",
+        "report/pre-aln_PCNF_{sample}_NanoStats.txt"
     params:
-        prefix="PCNF_{sample}_",
+        prefix="pre-aln_PCNF_{sample}_",
         outdir="report"
+    threads: 8 
     shell:
-        "NanoPlot -t 8 --fastq {input} --outdir {params.outdir} -p {params.prefix}"
+        "NanoPlot -t {threads} --fastq {input} --outdir {params.outdir} -p {params.prefix}"
 
 if OPT == 'vulcan':
     rule vulcan:
@@ -62,8 +68,9 @@ if OPT == 'vulcan':
             "data/vulcan_PCNF_{sample}_90.bam"
         params:
             prefix="data/vulcan_PCNF_{sample}"
+        threads: 10
         shell:
-            "vulcan -ont -t 10 -r {input.ref} -i {input.fastq} -o {params.prefix}"
+            "vulcan -ont -t {threads} -r {input.ref} -i {input.fastq} -o {params.prefix}"
     rule vulcan_bam_index:
         input:
             "data/vulcan_PCNF_{sample}_90.bam",
@@ -81,8 +88,9 @@ if OPT == 'vulcan':
         params:
             prefix="vulcan_PCNF_{sample}_",
             outdir="report"
+        threads: 8
         shell:
-            "NanoPlot -t 8 --bam {input} -p {params.prefix} -o {params.outdir}"
+            "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
 
     #To dos: workaround
     rule vulcan_final_report:
@@ -128,8 +136,9 @@ else:
         params:
             prefix="mm2_PCNF_{sample}_",
             outdir="report"
+        threads: 8
         shell:
-            "NanoPlot -t 8 --bam {input} -p {params.prefix} -o {params.outdir}"
+            "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
 
     #To dos: workaround to simplify the command line input to snakemake
     rule mm2_final_report:
