@@ -1,17 +1,18 @@
 configfile: "config/config.yaml"
 
 OPT = config["rule_opt"]
-data_src = config["raw_data"]
+raw_fastq = config["fastq_data"]
+ref_genome = config["reference"]
 
 rule all:
     input:
-        "report/pre-aln_PCNF_A_fastqc.html",
-        "report/pre-aln_PCNF_A_NanoStats.txt",
-        "report/final_PCNF_A_NanoPlot-report.html"
+        "report/pre-aln_PCNF_A_NanoPlot-report.html",
+        "report/aligned_A_NanoPlot-report.html",
+        "report/PCNF_{sample}_fastqc.zip"
 
 rule prep_data:
     input: 
-        data_src
+        raw_fastq
     output: 
         "data/{sample}.fastq.gz"
     shell: 
@@ -40,9 +41,9 @@ rule fastqc:
     input:
         "data/PCNF_{sample}.fastq.gz"
     output:
-        "report/pre-aln_PCNF_{sample}_fastqc.html",
-        "report/pre-aln_PCNF_{sample}_fastqc.zip"
-    threads: 8
+        "report/PCNF_{sample}_fastqc.html",
+        "report/PCNF_{sample}_fastqc.zip"
+    threads: 5
     shell:
         "fastqc --threads {threads} --outdir report {input}"
     
@@ -62,8 +63,8 @@ rule pre_aln_NanoPlot:
 if OPT == 'vulcan':
     rule vulcan:
         input:
-            ref="/datastore/homes3/s1804374/kai_lambda/J02459.fasta",
-            fastq="data/PCNF_{sample}.fastq.gz"
+            ref = ref_genome,
+            fastq="data/PCNF_{sample}.fastq.gz",            
         output:
             "data/vulcan_PCNF_{sample}_90.bam"
         params:
@@ -84,7 +85,7 @@ if OPT == 'vulcan':
             "data/vulcan_PCNF_{sample}_90.bam",
         output:
             "report/vulcan_PCNF_{sample}_NanoPlot-report.html",
-            "report/vulcan_PCNF_{sample}_NanoStats.txt",
+            "report/vulcan_PCNF_{sample}_NanoStats.txt"
         params:
             prefix="vulcan_PCNF_{sample}_",
             outdir="report"
@@ -97,15 +98,15 @@ if OPT == 'vulcan':
         input:
             "report/vulcan_PCNF_{sample}_NanoPlot-report.html"
         output:
-            "report/final_PCNF_{sample}_NanoPlot-report.html"
+            "report/aligned_{sample}_NanoPlot-report.html"
         shell:
             "cp {input} {output}"
         
 else:
     rule minimap2:
         input:
-            ref="/datastore/homes3/s1804374/kai_lambda/J02459.fasta",
-            fastq="data/PCNF_{sample}.fastq.gz"
+            ref = ref_genome,
+            fastq="data/PCNF_{sample}.fastq.gz",
         output:
             "data/mm2_PCNF_{sample}.sam"
         shell:
@@ -121,7 +122,7 @@ else:
             
     rule mm2_bam_index:
         input:
-           "data/mm2_PCNF_{sample}.bam"
+            "data/mm2_PCNF_{sample}.bam"
         output:
             "data/mm2_PCNF_{sample}.bam.bai"
         shell:
@@ -145,7 +146,7 @@ else:
         input:
             "report/mm2_PCNF_{sample}_NanoPlot-report.html"
         output:
-            "report/final_PCNF_{sample}_NanoPlot-report.html"
+            "report/aligned_{sample}_NanoPlot-report.html"
         shell:
             "cp {input} {output}"
     

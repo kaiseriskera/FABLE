@@ -1,2 +1,3 @@
 rule_opt: "vulcan"
-raw_data: "/datastore/homes3/s1804374/kai_lambda/fastqgz_files.fastq.gz/{sample}.fastq.gz"
+fastq_data: "/datastore/homes3/s1804374/kai_lambda/fastqgz_files.fastq.gz/{sample}.fastq.gz"
+reference: "/datastore/homes3/s1804374/kai_lambda/J02459.fasta"
