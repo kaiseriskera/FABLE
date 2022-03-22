@@ -3,12 +3,14 @@ configfile: "config/config.yaml"
 OPT = config["rule_opt"]
 raw_fastq = config["fastq_data"]
 ref_genome = config["reference"]
+#bench = config["benchmarks"]
 
 rule all:
     input:
         "report/PCNF_A_fastqc.html",
         "report/PCNF_A_NanoPlot-report.html",
-        "report/aligned_A_NanoPlot-report.html"
+        "report/aligned_A_NanoPlot-report.html",
+        "report/bench_A.txt"
 
 rule prep_data:
     input: 
@@ -24,7 +26,7 @@ rule porechop:
     output: 
         "data/pc_{sample}.fastq.gz"
     benchmark:
-        "benchmarks/PoreChop/{sample}.txt"
+        "benchmarks/PoreChop_{sample}.txt"
     shell: 
         "porechop -i {input} -o {output}"
         
@@ -37,7 +39,7 @@ rule nanofilt:
         quality="10",
         headcrop="10"
     benchmark:
-        "benchmarks/NanoFilt/{sample}.txt"
+        "benchmarks/NanoFilt_{sample}.txt"
     shell:
         "gunzip -c {input} | NanoFilt -q {params.quality} --headcrop {params.headcrop} | gzip > {output}"
 
@@ -49,7 +51,7 @@ rule fastqc:
         "report/PCNF_{sample}_fastqc.zip"
     threads: 5
     benchmark:
-        "benchmarks/fastqc/{sample}.txt"
+        "benchmarks/fastqc_{sample}.txt"
     shell:
         "fastqc --threads {threads} --outdir report {input}"
     
@@ -64,7 +66,7 @@ rule pre_aln_NanoPlot:
         outdir="report"
     threads: 8 
     benchmark:
-        "benchmarks/Pre-alignment_NanoPlot/{sample}.txt"
+        "benchmarks/Pre-alignment_NanoPlot_{sample}.txt"
     shell:
         "NanoPlot -t {threads} --fastq {input} --outdir {params.outdir} -p {params.prefix}"
 
@@ -79,7 +81,7 @@ if OPT == 'vulcan':
             prefix="data/vulcan_PCNF_{sample}"
         threads: 10
         benchmark:
-            "benchmarks/Vulcan/{sample}.txt"
+            "benchmarks/Vulcan_{sample}.txt"
         shell:
             "vulcan -ont -t {threads} -r {input.ref} -i {input.fastq} -o {params.prefix}"
     
@@ -89,7 +91,7 @@ if OPT == 'vulcan':
         output:
             "data/vulcan_PCNF_{sample}_90.bam.bai",
         benchmark:
-            "benchmarks/vulcan_bam_index/{sample}.txt"
+            "benchmarks/vulcan_bam_index_{sample}.txt"
         shell:
             "samtools index {input}"
 
@@ -104,7 +106,7 @@ if OPT == 'vulcan':
             outdir="report"
         threads: 8
         benchmark:
-            "benchmarks/Post-alignment_vulcan_NanoPlot/{sample}.txt"
+            "benchmarks/Post-alignment_NanoPlot_{sample}.txt"
         shell:
             "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
 
@@ -116,7 +118,7 @@ if OPT == 'vulcan':
             "report/aligned_{sample}_NanoPlot-report.html"
         shell:
             "cp {input} {output}"
-        
+
 else:
     rule minimap2:
         input:
@@ -125,7 +127,7 @@ else:
         output:
             "data/mm2_PCNF_{sample}.sam"
         benchmark:
-            "benchmarks/Minimap2/{sample}.txt"
+            "benchmarks/Minimap2_{sample}.txt"
         shell:
             "minimap2 -ax map-ont {input.ref} {input.fastq} > {output}"
 
@@ -135,7 +137,7 @@ else:
         output:
             "data/mm2_PCNF_{sample}.bam"
         benchmark:
-            "benchmarks/mm2_sam_to_bam/{sample}.txt"
+            "benchmarks/mm2_sam_to_bam_{sample}.txt"
         shell:
             "samtools sort {input} -o {output}"
             
@@ -145,7 +147,7 @@ else:
         output:
             "data/mm2_PCNF_{sample}.bam.bai"
         benchmark:
-            "benchmarks/mm2_bam_index/{sample}.txt"
+            "benchmarks/mm2_bam_index_{sample}.txt"
         shell:
             "samtools index {input}"
 
@@ -160,7 +162,7 @@ else:
             outdir="report"
         threads: 8
         benchmark:
-            "benchmarks/Post-alignment_mm2_NanoPlot/{sample}.txt"
+            "benchmarks/Post-alignment_NanoPlot_{sample}.txt"
         shell:
             "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
 
@@ -172,4 +174,15 @@ else:
             "report/aligned_{sample}_NanoPlot-report.html"
         shell:
             "cp {input} {output}"
-    
+
+#
+# ======== End of Else Statement for mm2/vulcan option ====================================================
+#
+
+rule bench:
+    input:
+        "benchmarks/Post-alignment_NanoPlot_{sample}.txt"
+    output:
+        "report/bench_{sample}.txt"
+    shell:
+        "cat benchmarks/*.txt >> {output}"
