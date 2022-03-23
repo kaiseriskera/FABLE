@@ -1,4 +1,7 @@
 rule_opt: "vulcan"
 fastq_data: "/datastore/homes3/s1804374/kai_lambda/fastqgz_files.fastq.gz/{sample}.fastq.gz"
+fastq_data_path: "/datastore/homes3/s1804374/kai_lambda/fastqgz_files.fastq.gz"
 reference: "/datastore/homes3/s1804374/kai_lambda/J02459.fasta"
-benchmarks: "/datastore/homes3/s1804374/kai_bench/benchmarks/*/{sample}.txt"
+#benchmarked_tasks: "/datastore/homes3/s1804374/kai_bench/benchmarks/*/{sample}.txt"
+#mm2_bench = ["fastqc","Minimap2","mm2_sam_to_bam","NanoFilt",","Post-alignment_mm2_NanoPlot","Pre-alignment_NanoPlot"]
+samples: FAR12603_pass_255c3309

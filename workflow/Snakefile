@@ -3,14 +3,16 @@ configfile: "config/config.yaml"
 OPT = config["rule_opt"]
 raw_fastq = config["fastq_data"]
 ref_genome = config["reference"]
+SAMPLE = config["samples"]
+NUM = list(range(0, 2))
 #bench = config["benchmarks"]
 
 rule all:
     input:
-        "report/PCNF_A_fastqc.html",
-        "report/PCNF_A_NanoPlot-report.html",
-        "report/aligned_A_NanoPlot-report.html",
-        "report/bench_A.txt"
+        expand("report/PCNF_{samplex}_{numx}_fastqc.zip", samplex=SAMPLE, numx=NUM),
+        expand("report/PCNF_{samplex}_{numx}_NanoPlot-report.html", samplex=SAMPLE, numx=NUM),
+        expand("report/aligned_{samplex}_{numx}_NanoPlot-report.html", samplex=SAMPLE, numx=NUM),
+        expand("report/bench_{samplex}_{numx}.txt", samplex=SAMPLE, numx=NUM)
 
 rule prep_data:
     input: 
