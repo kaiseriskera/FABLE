@@ -3,16 +3,17 @@ configfile: "config/config.yaml"
 OPT = config["rule_opt"]
 raw_fastq = config["fastq_data"]
 ref_genome = config["reference"]
+MM2_BENCH = config["mm2_bench"]
+VULCAN_BENCH = config["vulcan_bench"]
 SAMPLE = config["samples"]
-NUM = list(range(0, 2))
-#bench = config["benchmarks"]
+NUM = config["num"]
 
 rule all:
     input:
         expand("report/PCNF_{samplex}_{numx}_fastqc.zip", samplex=SAMPLE, numx=NUM),
         expand("report/PCNF_{samplex}_{numx}_NanoPlot-report.html", samplex=SAMPLE, numx=NUM),
         expand("report/aligned_{samplex}_{numx}_NanoPlot-report.html", samplex=SAMPLE, numx=NUM),
-        expand("report/bench_{samplex}_{numx}.txt", samplex=SAMPLE, numx=NUM)
+        "report/bench.txt"
 
 rule prep_data:
     input: 
@@ -111,6 +112,18 @@ if OPT == 'vulcan':
             "benchmarks/Post-alignment_NanoPlot_{sample}.txt"
         shell:
             "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
+    
+    rule vulcan_bench_report:
+        input:
+            expand("benchmarks/{bench}_{samplex}_{numx}.txt", bench=VULCAN_BENCH, samplex=SAMPLE, numx=NUM)
+        output:
+            'report/bench.txt'
+        run:
+            with open(output[0], 'w') as out:
+                for i in input:
+                    bench = i.split('.')[0][11:]
+                    for line in open(i):
+                        out.write(bench + ' ' + line)
 
     #To dos: workaround
     rule vulcan_final_report:
@@ -167,6 +180,18 @@ else:
             "benchmarks/Post-alignment_NanoPlot_{sample}.txt"
         shell:
             "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
+    
+    rule mm2_bench_report:
+        input:
+            expand("benchmarks/{bench}_{samplex}_{numx}.txt", bench=MM2_BENCH, samplex=SAMPLE, numx=NUM)
+        output:
+            'report/bench.txt'
+        run:
+            with open(output[0], 'w') as out:
+                for i in input:
+                    bench = i.split('.')[0][11:]
+                    for line in open(i):
+                        out.write(bench + ' ' + line)
 
     #To dos: workaround to simplify the command line input to snakemake
     rule mm2_final_report:
@@ -181,10 +206,4 @@ else:
 # ======== End of Else Statement for mm2/vulcan option ====================================================
 #
 
-rule bench:
-    input:
-        "benchmarks/Post-alignment_NanoPlot_{sample}.txt"
-    output:
-        "report/bench_{sample}.txt"
-    shell:
-        "cat benchmarks/*.txt >> {output}"
+
