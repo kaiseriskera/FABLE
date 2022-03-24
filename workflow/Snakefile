@@ -7,13 +7,15 @@ MM2_BENCH = config["mm2_bench"]
 VULCAN_BENCH = config["vulcan_bench"]
 SAMPLE = config["samples"]
 NUM = config["num"]
+#ALIGNER = config["aligner"]
 
 rule all:
     input:
         expand("report/PCNF_{samplex}_{numx}_fastqc.zip", samplex=SAMPLE, numx=NUM),
         expand("report/PCNF_{samplex}_{numx}_NanoPlot-report.html", samplex=SAMPLE, numx=NUM),
         expand("report/aligned_{samplex}_{numx}_NanoPlot-report.html", samplex=SAMPLE, numx=NUM),
-        "report/bench.txt"
+        "report/bench.txt",
+        "report/samstats.txt"
 
 rule prep_data:
     input: 

@@ -7,3 +7,4 @@ mm2_bench: ["fastqc", "Minimap2", "mm2_sam_to_bam", "NanoFilt", "Post-alignment_
 vulcan_bench: ["fastqc", "NanoFilt", "Post-alignment_NanoPlot", "Pre-alignment_NanoPlot", "PoreChop", "vulcan_bam_index", "Vulcan"]
 samples: FAR12603_pass_255c3309
 num: [0,2]
+#aligner: ["vulcan", "mm2"]
