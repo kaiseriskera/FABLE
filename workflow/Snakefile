@@ -1,39 +1,42 @@
 configfile: "config/config.yaml"
 
 OPT = config["rule_opt"]
-raw_fastq = config["fastq_data"]
+FASTQ_PATH = config["fastq_data_path"]
 ref_genome = config["reference"]
 MM2_BENCH = config["mm2_bench"]
 VULCAN_BENCH = config["vulcan_bench"]
 SAMPLE = config["samples"]
-NUM = config["num"]
+NUM = list(range(config["num"][0],config['num'][1]))
+#NUM = list(range(10,11))
 #ALIGNER = config["aligner"]
 
 rule all:
     input:
-        expand("report/PCNF_{samplex}_{numx}_fastqc.zip", samplex=SAMPLE, numx=NUM),
-        expand("report/PCNF_{samplex}_{numx}_NanoPlot-report.html", samplex=SAMPLE, numx=NUM),
-        expand("report/aligned_{samplex}_{numx}_NanoPlot-report.html", samplex=SAMPLE, numx=NUM),
-        "report/bench.txt",
-        "report/samstats.txt"
+        expand("report/PCNF_{sample}_fastqc.zip", sample=SAMPLE),
+        expand("report/PCNF_{sample}_NanoPlot-report.html", sample=SAMPLE),
+        expand("report/aligned_{sample}_NanoPlot-report.html", sample=SAMPLE),
+        "report/bench.txt"
+        #"report/samstats.txt"
 
 rule prep_data:
     input: 
-        raw_fastq
+        expand("{fastq_path}/{sample}_{num}.fastq.gz", fastq_path=FASTQ_PATH, sample=SAMPLE, num=NUM)
     output: 
-        "data/{sample}.fastq.gz"
+        expand("raw_data/{sample}_{num}.fastq.gz", sample=SAMPLE, num=NUM),
+        directory("raw_data")
     shell: 
-        "ln -sf {input} {output}"
+        "ln -sf -t raw_data {input}"
 
 rule porechop:
     input: 
-        "data/{sample}.fastq.gz"
+        expand("raw_data/{sample}_{num}.fastq.gz", sample=SAMPLE, num=NUM),
+        dir = directory("raw_data")
     output: 
         "data/pc_{sample}.fastq.gz"
     benchmark:
         "benchmarks/PoreChop_{sample}.txt"
     shell: 
-        "porechop -i {input} -o {output}"
+        "porechop -i {input.dir} -o {output}"
         
 rule nanofilt:
     input: 
@@ -117,7 +120,7 @@ if OPT == 'vulcan':
     
     rule vulcan_bench_report:
         input:
-            expand("benchmarks/{bench}_{samplex}_{numx}.txt", bench=VULCAN_BENCH, samplex=SAMPLE, numx=NUM)
+            expand("benchmarks/{bench}_{samplex}.txt", bench=VULCAN_BENCH, samplex=SAMPLE)
         output:
             'report/bench.txt'
         run:
@@ -185,7 +188,7 @@ else:
     
     rule mm2_bench_report:
         input:
-            expand("benchmarks/{bench}_{samplex}_{numx}.txt", bench=MM2_BENCH, samplex=SAMPLE, numx=NUM)
+            expand("benchmarks/{bench}_{samplex}.txt", bench=MM2_BENCH, samplex=SAMPLE)
         output:
             'report/bench.txt'
         run:

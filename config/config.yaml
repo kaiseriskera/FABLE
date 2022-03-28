@@ -6,5 +6,7 @@ reference: "/datastore/homes3/s1804374/kai_lambda/J02459.fasta"
 mm2_bench: ["fastqc", "Minimap2", "mm2_sam_to_bam", "NanoFilt", "Post-alignment_NanoPlot", "Pre-alignment_NanoPlot", "PoreChop"]
 vulcan_bench: ["fastqc", "NanoFilt", "Post-alignment_NanoPlot", "Pre-alignment_NanoPlot", "PoreChop", "vulcan_bam_index", "Vulcan"]
 samples: FAR12603_pass_255c3309
-num: [0,2]
+#num: [10:11]
+num: [10,12]
+
 #aligner: ["vulcan", "mm2"]
