@@ -1,12 +1,9 @@
 rule_opt: "vulcan"
 fastq_data: "/datastore/homes3/s1804374/kai_lambda/fastqgz_files.fastq.gz/{sample}.fastq.gz"
-fastq_data_path: "/datastore/homes3/s1804374/kai_lambda/fastqgz_files.fastq.gz"
+test_path: "/datastore/homes3/s1804374/kai_lambda/test_fastqgz_files/"
 reference: "/datastore/homes3/s1804374/kai_lambda/J02459.fasta"
-#benchmarked_tasks: "/datastore/homes3/s1804374/kai_bench/benchmarks/*/{sample}.txt"
-mm2_bench: ["fastqc", "Minimap2", "mm2_sam_to_bam", "NanoFilt", "Post-alignment_NanoPlot", "Pre-alignment_NanoPlot", "PoreChop"]
-vulcan_bench: ["fastqc", "NanoFilt", "Post-alignment_NanoPlot", "Pre-alignment_NanoPlot", "PoreChop", "vulcan_bam_index", "Vulcan"]
+mm2_bench: ["FastQC", "Minimap2", "mm2_sam_to_bam", "NanoFilt", "Post-alignment_NanoPlot", "Pre-alignment_NanoPlot", "PoreChop"]
+vulcan_bench: ["FastQC", "NanoFilt", "Post-alignment_NanoPlot", "Pre-alignment_NanoPlot", "PoreChop", "vulcan_bam_index", "Vulcan"]
 samples: FAR12603_pass_255c3309
-#num: [10:11]
-num: [10,12]
-
-#aligner: ["vulcan", "mm2"]
+num: [0,2]
+aligners: ["vulcan","mm2"]

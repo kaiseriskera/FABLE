@@ -1,80 +1,77 @@
 configfile: "config/config.yaml"
 
 OPT = config["rule_opt"]
-FASTQ_PATH = config["fastq_data_path"]
+TESTPATH = config["test_path"]
 ref_genome = config["reference"]
 MM2_BENCH = config["mm2_bench"]
 VULCAN_BENCH = config["vulcan_bench"]
 SAMPLE = config["samples"]
-NUM = list(range(config["num"][0],config['num'][1]))
-#NUM = list(range(10,11))
-#ALIGNER = config["aligner"]
+ALIGNER = config["aligners"]
+
 
 rule all:
     input:
-        expand("report/PCNF_{sample}_fastqc.zip", sample=SAMPLE),
-        expand("report/PCNF_{sample}_NanoPlot-report.html", sample=SAMPLE),
-        expand("report/aligned_{sample}_NanoPlot-report.html", sample=SAMPLE),
-        "report/bench.txt"
-        #"report/samstats.txt"
-
-rule prep_data:
-    input: 
-        expand("{fastq_path}/{sample}_{num}.fastq.gz", fastq_path=FASTQ_PATH, sample=SAMPLE, num=NUM)
-    output: 
-        expand("raw_data/{sample}_{num}.fastq.gz", sample=SAMPLE, num=NUM),
-        directory("raw_data")
-    shell: 
-        "ln -sf -t raw_data {input}"
+        "report/FastQC/PCNF_read_fastqc.html",
+        "report/Pre-alignment_NanoPlot/PCNF_read_NanoPlot-report.html",
+        # "report/Post-alignment_NanoPlot/vulcan_PCNF_NanoPlot-report.html",
+        # "report/Post-alignment_NanoPlot/mm2_PCNF_NanoPlot-report.html",
+        #expand("report/Post-alignment_NanoPlot/{(vulcan|mm2)}_PCNF_NanoPlot-report.html"),
+        "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html",
+        "report/Benchmarks/bench.txt"
 
 rule porechop:
     input: 
-        expand("raw_data/{sample}_{num}.fastq.gz", sample=SAMPLE, num=NUM),
-        dir = directory("raw_data")
-    output: 
-        "data/pc_{sample}.fastq.gz"
+        TESTPATH
+    output:
+        "data/PoreChop/PC_read.fastq.gz"
+    params:
+        outdir="data/PoreChop"
     benchmark:
-        "benchmarks/PoreChop_{sample}.txt"
+        "benchmarks/PoreChop.txt"
+    threads: 12
     shell: 
-        "porechop -i {input.dir} -o {output}"
+        "porechop -i {input} -t {threads} -o {output}"
         
 rule nanofilt:
     input: 
-        "data/pc_{sample}.fastq.gz"
+        "data/PoreChop/PC_read.fastq.gz"
     output:
-        "data/PCNF_{sample}.fastq.gz"
+        "data/NanoFilt/PCNF_read.fastq.gz"
     params:
         quality="10",
-        headcrop="10"
+        headcrop="10",
+        outdir="data/NanoFilt"
     benchmark:
-        "benchmarks/NanoFilt_{sample}.txt"
+        "benchmarks/NanoFilt.txt"
     shell:
         "gunzip -c {input} | NanoFilt -q {params.quality} --headcrop {params.headcrop} | gzip > {output}"
 
 rule fastqc:
     input:
-        "data/PCNF_{sample}.fastq.gz"
+        "data/NanoFilt/PCNF_read.fastq.gz"
     output:
-        "report/PCNF_{sample}_fastqc.html",
-        "report/PCNF_{sample}_fastqc.zip"
-    threads: 5
+        "report/FastQC/PCNF_read_fastqc.html",
+        "report/FastQC/PCNF_read_fastqc.zip"
+    threads: 8
+    params:
+        outdir="report/FastQC"
     benchmark:
-        "benchmarks/fastqc_{sample}.txt"
+        "benchmarks/FastQC.txt"
     shell:
-        "fastqc --threads {threads} --outdir report {input}"
-    
+        "fastqc --threads {threads} --outdir {params.outdir} {input}"
+
 rule pre_aln_NanoPlot:
     input:
-        "data/PCNF_{sample}.fastq.gz"
+        "data/NanoFilt/PCNF_read.fastq.gz"
     output:
-        "report/PCNF_{sample}_NanoPlot-report.html",
-        "report/PCNF_{sample}_NanoStats.txt"
+        "report/Pre-alignment_NanoPlot/PCNF_read_NanoPlot-report.html",
+        "report/Pre-alignment_NanoPlot/PCNF_read_NanoStats.txt"
     params:
-        prefix="PCNF_{sample}_",
-        outdir="report"
+        prefix="PCNF_read_",
+        outdir="report/Pre-alignment_NanoPlot"
     threads: 8 
     benchmark:
-        "benchmarks/Pre-alignment_NanoPlot_{sample}.txt"
+        "benchmarks/Pre-alignment_NanoPlot.txt"
     shell:
         "NanoPlot -t {threads} --fastq {input} --outdir {params.outdir} -p {params.prefix}"
 
@@ -82,58 +79,57 @@ if OPT == 'vulcan':
     rule vulcan:
         input:
             ref = ref_genome,
-            fastq="data/PCNF_{sample}.fastq.gz"
+            fastq="data/NanoFilt/PCNF_read.fastq.gz"
         output:
-            "data/vulcan_PCNF_{sample}_90.bam"
+            "data/Vulcan/vulcan_PCNF_90.bam"
         params:
-            prefix="data/vulcan_PCNF_{sample}"
+            prefix="data/Vulcan/vulcan_PCNF"
         threads: 10
         benchmark:
-            "benchmarks/Vulcan_{sample}.txt"
+            "benchmarks/Vulcan.txt"
         shell:
             "vulcan -ont -t {threads} -r {input.ref} -i {input.fastq} -o {params.prefix}"
     
     rule vulcan_bam_index:
         input:
-            "data/vulcan_PCNF_{sample}_90.bam",
+            "data/Vulcan/vulcan_PCNF_90.bam",
         output:
-            "data/vulcan_PCNF_{sample}_90.bam.bai",
+            "data/Vulcan/vulcan_PCNF_90.bam.bai"
         benchmark:
-            "benchmarks/vulcan_bam_index_{sample}.txt"
+            "benchmarks/vulcan_bam_index.txt"
         shell:
             "samtools index {input}"
 
     rule vulcan_NanoPlot:
         input:
-            "data/vulcan_PCNF_{sample}_90.bam",
+            "data/Vulcan/vulcan_PCNF_90.bam"
         output:
-            "report/vulcan_PCNF_{sample}_NanoPlot-report.html",
-            "report/vulcan_PCNF_{sample}_NanoStats.txt"
+            "report/Post-alignment_NanoPlot/vulcan_PCNF_NanoPlot-report.html",
+            "report/Post-alignment_NanoPlot/vulcan_PCNF_NanoStats.txt"
         params:
-            prefix="vulcan_PCNF_{sample}_",
-            outdir="report"
+            prefix="vulcan_PCNF_",
+            outdir="report/Post-alignment_NanoPlot"
         threads: 8
         benchmark:
-            "benchmarks/Post-alignment_NanoPlot_{sample}.txt"
+            "benchmarks/Post-alignment_NanoPlot.txt"
         shell:
             "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
     
     rule vulcan_bench_report:
         input:
-            expand("benchmarks/{bench}_{samplex}.txt", bench=VULCAN_BENCH, samplex=SAMPLE)
+            expand("benchmarks/{bench}.txt", bench=VULCAN_BENCH)
         output:
-            'report/bench.txt'
+            'report/Benchmarks/bench.txt'
         run:
             with open(output[0], 'w') as out:
                 for i in input:
-                    bench = i.split('.')[0][11:]
+                    bench = (config["samples"])+i.split('.')[0][10:]
                     for line in open(i):
-                        out.write(bench + ' ' + line)
+                        out.write(bench + ' '+ line)
 
-    #To dos: workaround
     rule vulcan_final_report:
         input:
-            "report/vulcan_PCNF_{sample}_NanoPlot-report.html"
+            "report/vulcan_PCNF_NanoPlot-report.html"
         output:
             "report/aligned_{sample}_NanoPlot-report.html"
         shell:
@@ -143,72 +139,72 @@ else:
     rule minimap2:
         input:
             ref = ref_genome,
-            fastq="data/PCNF_{sample}.fastq.gz"
+            fastq="data/NanoFilt/PCNF_read.fastq.gz"
         output:
-            "data/mm2_PCNF_{sample}.sam"
+            "data/Minimap2/mm2_PCNF.sam"
         benchmark:
-            "benchmarks/Minimap2_{sample}.txt"
+            "benchmarks/Minimap2.txt"
         shell:
             "minimap2 -ax map-ont {input.ref} {input.fastq} > {output}"
 
     rule sam_to_bam:
         input:
-            "data/mm2_PCNF_{sample}.sam"
+            "data/Minimap2/mm2_PCNF.sam"
         output:
-            "data/mm2_PCNF_{sample}.bam"
+            "data/Minimap2/mm2_PCNF.bam"
         benchmark:
-            "benchmarks/mm2_sam_to_bam_{sample}.txt"
+            "benchmarks/mm2_sam_to_bam.txt"
         shell:
             "samtools sort {input} -o {output}"
             
     rule mm2_bam_index:
         input:
-            "data/mm2_PCNF_{sample}.bam"
+            "data/Minimap2/mm2_PCNF.bam"
         output:
-            "data/mm2_PCNF_{sample}.bam.bai"
+            "data/Minimap2/mm2_PCNF.bam.bai"
         benchmark:
-            "benchmarks/mm2_bam_index_{sample}.txt"
+            "benchmarks/mm2_bam_index.txt"
         shell:
             "samtools index {input}"
 
     rule mm2_NanoPlot:
         input:
-            "data/mm2_PCNF_{sample}.bam"
+            "data/Minimap2/mm2_PCNF.bam"
         output:
-            "report/mm2_PCNF_{sample}_NanoPlot-report.html",
-            "report/mm2_PCNF_{sample}_NanoStats.txt"
+            "report/Post-alignment_NanoPlot/mm2_PCNF_NanoPlot-report.html",
+            "report/Post-alignment_NanoPlot/mm2_PCNF_NanoStats.txt"
         params:
-            prefix="mm2_PCNF_{sample}_",
-            outdir="report"
+            prefix="mm2_PCNF_",
+            outdir="report/Post-alignment_NanoPlot/"
         threads: 8
         benchmark:
-            "benchmarks/Post-alignment_NanoPlot_{sample}.txt"
+            "benchmarks/Post-alignment_NanoPlot.txt"
         shell:
             "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
     
     rule mm2_bench_report:
         input:
-            expand("benchmarks/{bench}_{samplex}.txt", bench=MM2_BENCH, samplex=SAMPLE)
+            expand("benchmarks/{bench}.txt", bench=MM2_BENCH)
         output:
-            'report/bench.txt'
+            'report/Benchmarks/bench.txt'
         run:
             with open(output[0], 'w') as out:
                 for i in input:
-                    bench = i.split('.')[0][11:]
+                    bench = (config["samples"])+i.split('.')[0]
                     for line in open(i):
-                        out.write(bench + ' ' + line)
+                        out.write(bench + ' '+ line)
 
-    #To dos: workaround to simplify the command line input to snakemake
+# #     #To dos: workaround to simplify the command line input to snakemake
     rule mm2_final_report:
         input:
-            "report/mm2_PCNF_{sample}_NanoPlot-report.html"
+            "report/Post-alignment_NanoPlot/mm2_PCNF_NanoPlot-report.html"
         output:
-            "report/aligned_{sample}_NanoPlot-report.html"
+            "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html"
         shell:
-            "cp {input} {output}"
+            "mv {input} {output}"
 
-#
-# ======== End of Else Statement for mm2/vulcan option ====================================================
-#
+# # # ======== End of Else Statement for mm2/vulcan option ====================================================
+# # #
+
 
 
