@@ -322,6 +322,7 @@ else:
             with open("report/Benchmarks/benchfile.csv") as infile, open("report/Benchmarks/nicebench.csv", "w") as outfile:
                 for line in infile:
                     outfile.write(re.sub(r"\s*,\s*", " ", line))
+                    # need to change re.sub command
 
     # plot bar chart
     rule barchart:
@@ -391,10 +392,10 @@ else:
 
 #     #To dos: workaround to simplify the command line input to snakemake
     rule mm2_nano_final:
-#         input:
-#             "report/Post-alignment_NanoPlot/mm2_PCNF_NanoPlot-report.html"
-#         output:
-#             "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html"
+        input:
+            "report/Post-alignment_NanoPlot/mm2_PCNF_NanoPlot-report.html"
+        output:
+            "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html"
         shell:
             "mv {input} {output}"
 
