@@ -8,7 +8,7 @@ VULCAN_BENCH = config["vulcan_bench"]
 SAMPLE = config["samples"]
 ALIGNER = config["aligners"]
 
-#workdir: config['test_dir2']
+workdir: config['test_dir']
 # find way to put first4steps, vulcansteps and mm2steps into 3 sep. workdirs
 # so no need new data generation for first4 if user specifies mm2 after vulcan and vice versa
 import pandas as pd
@@ -27,10 +27,10 @@ rule all:
         "report/Benchmarks/bench.txt",
         "report/Benchmarks/benchfile.txt",
         "report/Samtools_Stats/Aligned_readsamstat.txt",
-        "report/Benchmarks/dfbench.csv",
-        "report/Benchmarks/benchfile.csv",
-        "report/Benchmarks/nicebench.csv"
-
+        # "report/Benchmarks/dfbench.png",
+        # "report/Benchmarks/benchfile.csv",
+        # "report/Benchmarks/benchfile2.csv",
+        # "report/Benchmarks/benchfile1.csv"
 
 rule porechop:
     input: 
@@ -143,9 +143,7 @@ if OPT == 'vulcan':
             "report/Samtools_Stats/Aligned_readsamstat.txt"
         shell:
             "mv {input} {output}"
-
-    benchhead= "sample/process  s  h:m:s  max_rss  max_vms  max_uss  max_pss  io_in  io_out  mean_load  cpu_time"
-    
+   
     rule vulcan_bench_report:
         input:
             expand("benchmarks/{bench}.txt", bench=VULCAN_BENCH)
@@ -154,35 +152,60 @@ if OPT == 'vulcan':
         run:
             with open(output[0], 'w') as out:
                 for i in input:
-                    bench = (config["samples"])+i.split('.')[0][10:]
-                    for line in open(i):
-                        benchline= bench + ' ' + line 
-                        header = benchhead + "\n"
-                        # header = (config["benchhead1"])
-                        out.write(header + benchline)
-                        # out.write(benchline)
+                    bench = i.split('.')[0][11:]
+                    for line in open(i): 
+                        benchline= bench + " " + line 
+                        # header = benchhead + "\n"
+                        # out.write(header + benchline)
+                        out.write(benchline)
     
     rule vulcan_final_bench:
         input:
             'report/Benchmarks/bench.txt'
         output:
             "report/Benchmarks/benchfile.txt"
-        shell:
-            # "awk 'NR == 1 || NR % 4 == 0' {input} > {output}" (alternative way)
-            "sed -n '1p;0~4p' {input} > {output}"
+        run:
+            # "awk 'NR % 2 == 0' {input} > {output}"
+            "sed '/io_out/d' {input} > {output}"
 
-    # rule vbenchcsv:
-    #     input:
-    #         "report/Benchmarks/benchfile.txt"
-    #     output:
-    #         "report/Benchmarks/benchfile2.txt"
-    #     run:
-    #         import pandas as pd
-    #         df = pd.read_csv("report/Benchmarks/benchfile.txt", sep='\t')
-    #         header = config["samples"]+config["benchhead"]
-    #         frame=pd.DataFrame(df.values, columns = str(header))
-    #         frame.to_csv("report/Benchmarks/benchfile.txt", sep='\t')
-    
+    rule txttocsv:
+        input:
+            "report/Benchmarks/benchfile.txt"
+        output:
+            "report/Benchmarks/benchfile.csv"
+        run:
+            import pandas as pd
+            # # benchhead=["sample/process","s","h:m:s","max_rss","max_vms","max_uss","max_pss","io_in","io_out","mean_load","cpu_time"]
+            # df = pd.read_csv("report/Benchmarks/bench.txt")
+            # df.to_csv("report/Benchmarks/benchfile.csv", index=False)
+            with open("report/Benchmarks/benchfile.txt") as f, open("report/Benchmarks/benchfile.csv", 'w', newline='') as o:
+                writer = csv.writer(o)
+                for line in f:
+                    writer.writerow(line.split())
+                
+    rule header:
+        input:
+            "report/Benchmarks/benchfile.csv"
+        output:
+            "report/Benchmarks/benchfile1.csv"
+        run:
+            from pandas import read_csv 
+            df = read_csv("report/Benchmarks/benchfile.csv",header=None)
+            df.columns = ["process","s","h:m:s","max_rss","max_vms","max_uss","max_pss","io_in","io_out","mean_load","cpu_time"]
+            df.to_csv("report/Benchmarks/benchfile1.csv", index=False)
+
+    rule inversecsv:
+        input:
+            "report/Benchmarks/benchfile1.csv"
+        output:
+            "report/Benchmarks/benchfile2.csv"
+        run:
+            import re
+            import csv
+            from csv import reader, writer 
+            with open("report/Benchmarks/benchfile1.csv") as f, open("report/Benchmarks/benchfile2.csv", 'w', newline='') as fw: 
+                writer(fw, delimiter=',').writerows(zip(*reader(f, delimiter=',')))
+
     rule vulcan_nano_final:
         input:
             "report/Post-alignment_NanoPlot/vulcan_PCNF_NanoPlot-report.html"
@@ -254,7 +277,7 @@ else:
         shell:
             "mv {input} {output}"
      
-    benchhead= "sample/process  s  h:m:s  max_rss  max_vms  max_uss  max_pss  io_in  io_out  mean_load  cpu_time"
+    # benchhead= "sample/process  s  h:m:s  max_rss  max_vms  max_uss  max_pss  io_in  io_out  mean_load  cpu_time"
     
     rule mm2_bench_report:
         input:
@@ -262,16 +285,18 @@ else:
         output:
             'report/Benchmarks/bench.txt'
         run:
+            import os
             with open(output[0], 'w') as out:
                 for i in input:
                     # bench = (config["samples"])+i.split('.')[0][10:]
                     bench = i.split('.')[0][11:]
                     for line in open(i):
-                        benchline= bench + ' ' + line 
-                        header = benchhead + "\n"
-                        out.write(header + benchline)
-                        # out.write(benchline)
-
+                        benchline= bench + " " + line 
+                        # header = benchhead + "\n"
+                        # out.write(header + benchline)
+                        out.write(benchline)
+     
+    #  remove alt. lines
     rule mm2_final_bench:
         input:
             'report/Benchmarks/bench.txt'
@@ -279,119 +304,116 @@ else:
             "report/Benchmarks/benchfile.txt"
         shell:
             # "awk 'NR == 1 || NR % 4 == 0' {input} > {output}" (alternative way)
-            "sed -n '1p;0~4p' {input} > {output}"
-
-    # rule bench_csv:
-    #     input:
-    #         "report/Benchmarks/benchfile.txt"
-    #     output:
-    #         "report/Benchmarks/bench.csv"
-    #     shell:
-    #         "sed 1i"config["benchhead1"]" {input} > {output}
-    # rule trying_snakemake:
-    #     input:
-    #         "report/Benchmarks/benchfile.txt"
-    #     output:
-    #         "report/Benchmarks/bench.csv"
-    #     run:
-    #         df = pd.read_csv("report/Benchmarks/benchfile.txt")
-    #         df.to_csv("report/Benchmarks/bench.csv", header=config["benchhead1"], index=False)
-    
-    rule inversecsv:
+            "sed -n '1~2!p' {input} > {output}"
+            # import pandas as pd
+            # df = pd.read_fwf('report/Benchmarks/bench.txt')
+            # df.to_csv("report/Benchmarks/benchfile.csv", index=False)
+            
+    rule txttocsv:
         input:
             "report/Benchmarks/benchfile.txt"
         output:
             "report/Benchmarks/benchfile.csv"
         run:
-            import re
-            import csv
-            with open("report/Benchmarks/benchfile.txt") as f:
-                lines = [re.sub('\s(?=\d\d,)',",",x).split() for x in f if x.strip()]
-                zipped = zip(*lines)
-                with open("report/Benchmarks/benchfile.csv","w") as f1:
-                    wr = csv.writer(f1)
-                    wr.writerows(zipped)
-    
-    rule nicecsv:
+            import pandas as pd
+            # # benchhead=["sample/process","s","h:m:s","max_rss","max_vms","max_uss","max_pss","io_in","io_out","mean_load","cpu_time"]
+            # df = pd.read_csv("report/Benchmarks/bench.txt")
+            # df.to_csv("report/Benchmarks/benchfile.csv", index=False)
+            with open("report/Benchmarks/benchfile.txt") as f, open("report/Benchmarks/benchfile.csv", 'w', newline='') as o:
+                writer = csv.writer(o)
+                for line in f:
+                    writer.writerow(line.split())
+                
+    rule header:
         input:
             "report/Benchmarks/benchfile.csv"
         output:
-            "report/Benchmarks/nicebench.csv"
+            "report/Benchmarks/benchfile1.csv"
+        run:
+            from pandas import read_csv 
+            df = read_csv("report/Benchmarks/benchfile.csv",header=None)
+            df.columns = ["process","s","h:m:s","max_rss","max_vms","max_uss","max_pss","io_in","io_out","mean_load","cpu_time"]
+            df.to_csv("report/Benchmarks/benchfile1.csv", index=False)
+
+    rule inversecsv:
+        input:
+            "report/Benchmarks/benchfile1.csv"
+        output:
+            "report/Benchmarks/benchfile2.csv"
         run:
             import re
-            with open("report/Benchmarks/benchfile.csv") as infile, open("report/Benchmarks/nicebench.csv", "w") as outfile:
-                for line in infile:
-                    outfile.write(re.sub(","," ",line))
+            import csv
+            from csv import reader, writer 
+            with open("report/Benchmarks/benchfile1.csv") as f, open("report/Benchmarks/benchfile2.csv", 'w', newline='') as fw: 
+                writer(fw, delimiter=',').writerows(zip(*reader(f, delimiter=',')))
 
     # plot bar chart
     rule barchart:
         input: 
-            "report/Benchmarks/nicebench.csv"
+            "report/Benchmarks/benchfile2.csv"
         output:
-            "report/Benchmarks/dfbench.csv"
+            "report/Benchmarks/dfbench.png"
         run:
             import pandas as pd
             import matplotlib.pyplot as plt
             import numpy as np
-            # df = pd.read_csv(file_path, usecols=[3,6], names=['colA', 'colB'], header=None)
-            df = pd.read_csv("report/Benchmarks/nicebench.csv", names=["sample/process","FastQC", "Minimap2", "mm2_sam_to_bam", "NanoFilt", "Post-alignment_NanoPlot", "Pre-alignment_NanoPlot", "PoreChop"], header=None,skiprows=1)
-            df.to_csv("report/Benchmarks/dfbench.csv")
-            
-            # xprocessvalues = df['sample/process'].values
-            # x = np.arange(len(xprocessvalues))
-            # w = 0.3
-            # plt.bar(x-3*w, df['FastQC'].values, width=w, label='FastQC')
-            # plt.bar(x-2*w, df['Minimap2'].values, width=w, label='Minimap2')
-            # plt.bar(x-w, df["mm2_sam_to_bam"].values, width=w, label='mm2_sam_to_bam')
-            # plt.bar(x, df["NanoFilt"].values, width=w, label='NanoFilt')
-            # plt.bar(x+w, df["Pre-alignment_NanoPlot"].values, width=w, label='Pre-alignment_NanoPlot')
-            # plt.bar(x+2*w, df["Post-alignment_NanoPlot"].values, width=w, label='Post-alignment_NanoPlot')
-            # plt.plot(x+3*w, df["PoreChop"].values, width=w, label='PoreChop')
-            # plt.xticks(x, xprocessvalues)
-            # plt.ylim([0,100])
-            # plt.tight_layout()
-            # plt.xlabel('X label')
-            # plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, ncol=5)
-            # plt.savefig("report/Benchmarks/bench.png", bbox_inches="tight")
-            # plt.show()
-#     # # # rule benchcsv:
-#     # # #     input:
-#     # # #         "report/Benchmarks/bench.csv"
-#     # # #     output:
-#     # # #         "report/Benchmarks/benchd.csv"
-#     # # #     run:
-#     # # #         benchdata = pd.read_csv("report/Benchmarks/bench.csv")
-#     # # #         svalues=benchdata["s"].values
-#     # # #         hms=benchdata["h:m:s"].values
-#     # # #         max_rss=benchdata["max_rss"].values
-#     # # #         max_vms=benchdata["max_vms"].values
-#     # # #         max_uss=benchdata["max_uss"].values  
-#     # # #         max_pss = benchdata["max_pss"].values
-#     # # #         io_in = benchdata["io_in"].values
-#     # #         io_out = benchdata["io_out"].values
-#     # #         mean_load = benchdata["mean_load"].values
-#     # #         cpu_time = benchdata["cpu_time"].values
-#     # #         data = np.array(svalues, hms, max_rss, max_uss, max_pss, io_in, io_out,mean_load,cpu_time)
-#     # #         # x = np.arange(data.shape[0])
-#     # #         # dx = (np.arange(data.shape[1])-data.shape[1]/2.)/(data.shape[1]+2.)
-#     # #         # d = 1./(data.shape[1]+2.)
-#     # #         # fig, ax=plt.subplots()
-#     # #         # for i in range(data.shape[1]):
-#     # #         #     ax.bar(x+dx[i],data[:,i], width=d, label="label {}".format(i))
-#     # #         # plt.legend(framealpha=1).draggable()
-#     # #         # plt.show()
-#     # #         # svalues=benchdata[:,0]
-#     # #         # hmsvalues=benchdata[:,1]
-#     # #         # maxrss=benchdata[:,2]
-#     #         # maxuss=benchdata[:,3]
-#     #         # maxpss=benchdata[:,4]
-#     #         # ioin=benchdata[:,5]
-#             # ioout=benchdata[:,6]
-#             # meanload=benchdata[:,7]
-#             # cputime=benchdata[:,8]
+            df = pd.read_csv("report/Benchmarks/benchfile2.csv")
+            # , names=["sample/process","FastQC", "Minimap2", "mm2_sam_to_bam", "NanoFilt", "Post-alignment_NanoPlot", "Pre-alignment_NanoPlot", "PoreChop"], header=None,skiprows=1)
+            xprocessvalues = df['process'].values
+            x = np.arange(len(xprocessvalues))
+            w = 0.3
+            plt.bar(x-3*w, df['PoreChop'].values, width=w, label='PoreChop')
+            plt.bar(x-2*w, df['NanoFilt'].values, width=w, label='NanoFilt')
+            plt.bar(x-w, df["FastQC"].values, width=w, label='FastQC')
+            plt.bar(x, df["Pre-alignment_NanoPlot"].values, width=w, label='Pre-alignment_NanoPlot')
+            plt.bar(x+w, df["Minimap2"].values, width=w, label='Minimap2-alignment_NanoPlot')
+            plt.bar(x+2*w, df["mm2_sam_to_bam"].values, width=w, label='mm2_sam_to_bam')
+            plt.plot(x+3*w, df["Post-alignment_NanoPlot"].values, width=w, label='Post-alignment_NanoPlot')
+            plt.xticks(x, xprocessvalues)
+            plt.ylim([0,100])
+            plt.tight_layout()
+            ax.set_xlabel('X label')
+            plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, ncol=5)
+            plt.savefig("report/Benchmarks/bench.png", bbox_inches="tight")
+            plt.show()
+# #     # # # rule benchcsv:
+# #     # # #     input:
+# #     # # #         "report/Benchmarks/bench.csv"
+# #     # # #     output:
+# #     # # #         "report/Benchmarks/benchd.csv"
+# #     # # #     run:
+# #     # # #         benchdata = pd.read_csv("report/Benchmarks/bench.csv")
+# #     # # #         svalues=benchdata["s"].values
+# #     # # #         hms=benchdata["h:m:s"].values
+# #     # # #         max_rss=benchdata["max_rss"].values
+# #     # # #         max_vms=benchdata["max_vms"].values
+# #     # # #         max_uss=benchdata["max_uss"].values  
+# #     # # #         max_pss = benchdata["max_pss"].values
+# #     # # #         io_in = benchdata["io_in"].values
+# #     # #         io_out = benchdata["io_out"].values
+# #     # #         mean_load = benchdata["mean_load"].values
+# #     # #         cpu_time = benchdata["cpu_time"].values
+# #     # #         data = np.array(svalues, hms, max_rss, max_uss, max_pss, io_in, io_out,mean_load,cpu_time)
+# #     # #         # x = np.arange(data.shape[0])
+# #     # #         # dx = (np.arange(data.shape[1])-data.shape[1]/2.)/(data.shape[1]+2.)
+# #     # #         # d = 1./(data.shape[1]+2.)
+# #     # #         # fig, ax=plt.subplots()
+# #     # #         # for i in range(data.shape[1]):
+# #     # #         #     ax.bar(x+dx[i],data[:,i], width=d, label="label {}".format(i))
+# #     # #         # plt.legend(framealpha=1).draggable()
+# #     # #         # plt.show()
+# #     # #         # svalues=benchdata[:,0]
+# #     # #         # hmsvalues=benchdata[:,1]
+# #     # #         # maxrss=benchdata[:,2]
+# #     #         # maxuss=benchdata[:,3]
+# #     #         # maxpss=benchdata[:,4]
+# #     #         # ioin=benchdata[:,5]
+# #             # ioout=benchdata[:,6]
+# #             # meanload=benchdata[:,7]
+# #             # cputime=benchdata[:,8]
             
 
-#     #To dos: workaround to simplify the command line input to snakemake
+# #     #To dos: workaround to simplify the command line input to snakemake
     rule mm2_nano_final:
         input:
             "report/Post-alignment_NanoPlot/mm2_PCNF_NanoPlot-report.html"
@@ -400,4 +422,4 @@ else:
         shell:
             "mv {input} {output}"
 
-# # # # ======== End of Else Statement for mm2/vulcan option ====================================================
+# # # # # ======== End of Else Statement for mm2/vulcan option ====================================================

@@ -2,12 +2,13 @@ rule_opt: "vulcan"
 fastq_data: "/datastore/homes3/s1804374/kai_lambda/fastqgz_files.fastq.gz/"
 test_path: "/datastore/homes3/s1804374/kai_lambda/test_fastqgz_files/"
 reference: "/datastore/homes3/s1804374/kai_lambda/J02459.fasta"
-mm2_bench: ["FastQC", "Minimap2", "mm2_sam_to_bam", "NanoFilt", "Post-alignment_NanoPlot", "Pre-alignment_NanoPlot", "PoreChop"]
-vulcan_bench: ["FastQC", "NanoFilt", "Post-alignment_NanoPlot", "Pre-alignment_NanoPlot", "PoreChop", "vulcan_bam_index", "Vulcan"]
+mm2_bench: ["PoreChop", "NanoFilt", "FastQC", "Pre-alignment_NanoPlot", "Minimap2", "mm2_sam_to_bam", "Post-alignment_NanoPlot"]
+vulcan_bench: ["PoreChop", "NanoFilt", "FastQC", "Pre-alignment_NanoPlot", "Vulcan", "vulcan_bam_index", "Post-alignment_NanoPlot"]
 samples: FAR12603_pass_255c3309
 num: [0,2]
 aligners: ["vulcan","mm2"]
 test_dir: "/datastore/homes3/s1804374/kai_bench/test_dir"
 test_dir2: "/datastore/homes3/s1804374/kai_bench/test_dir2"
 benchhead: ["s", "h:m:s", "max_rss", "max_vms", "max_uss", "max_pss", "io_in", "io_out", "mean_load", "cpu_time"]
-benchhead1: "FAR12603_pass_255c3309, s, h:m:s, max_rss, max_vms, max_uss, max_pss, io_in, io_out, mean_load, cpu_time"
+benchhead1: "sample/process, s, h:m:s, max_rss, max_vms, max_uss, max_pss, io_in, io_out, mean_load, cpu_time"
+benchhead2: ["sample/process", "s", "h:m:s", "max_rss", "max_vms", "max_uss", "max_pss", "io_in", "io_out", "mean_load", "cpu_time"]
