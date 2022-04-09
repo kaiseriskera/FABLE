@@ -8,7 +8,7 @@ VULCAN_BENCH = config["vulcan_bench"]
 SAMPLE = config["samples"]
 ALIGNER = config["aligners"]
 
-workdir: config['test_dir']
+workdir: config['test_dir2']
 # find way to put first4steps, vulcansteps and mm2steps into 3 sep. workdirs
 # so no need new data generation for first4 if user specifies mm2 after vulcan and vice versa
 import pandas as pd
@@ -28,9 +28,9 @@ rule all:
         "report/Benchmarks/benchfile.txt",
         "report/Samtools_Stats/Aligned_readsamstat.txt",
         # "report/Benchmarks/dfbench.png",
-        # "report/Benchmarks/benchfile.csv",
-        # "report/Benchmarks/benchfile2.csv",
-        # "report/Benchmarks/benchfile1.csv"
+        "report/Benchmarks/benchfile.csv",
+        "report/Benchmarks/benchfile2.csv",
+        "report/Benchmarks/benchfile1.csv"
 
 rule porechop:
     input: 
@@ -147,9 +147,11 @@ if OPT == 'vulcan':
     rule vulcan_bench_report:
         input:
             expand("benchmarks/{bench}.txt", bench=VULCAN_BENCH)
+            # vulcan_bench: ["PoreChop", "NanoFilt", "FastQC", "Pre-alignment_NanoPlot", "Vulcan", "vulcan_bam_index", "Post-alignment_NanoPlot"]
         output:
             'report/Benchmarks/bench.txt'
         run:
+            import os
             with open(output[0], 'w') as out:
                 for i in input:
                     bench = i.split('.')[0][11:]
@@ -161,10 +163,10 @@ if OPT == 'vulcan':
     
     rule vulcan_final_bench:
         input:
-            'report/Benchmarks/bench.txt'
+            "report/Benchmarks/bench.txt"
         output:
             "report/Benchmarks/benchfile.txt"
-        run:
+        shell:
             # "awk 'NR % 2 == 0' {input} > {output}"
             "sed '/io_out/d' {input} > {output}"
 
@@ -304,7 +306,8 @@ else:
             "report/Benchmarks/benchfile.txt"
         shell:
             # "awk 'NR == 1 || NR % 4 == 0' {input} > {output}" (alternative way)
-            "sed -n '1~2!p' {input} > {output}"
+            # "sed -n '1~2!p' {input} > {output}"
+            "sed '/io_out/d' {input} > {output}"
             # import pandas as pd
             # df = pd.read_fwf('report/Benchmarks/bench.txt')
             # df.to_csv("report/Benchmarks/benchfile.csv", index=False)
