@@ -1,6 +1,6 @@
 # NanoNathair
-
-![](/Users/Kai_1/Downloads/nanonathair.png)
+<p align="center">
+  <img width="300" height="400" src="nanonathair-1.png">
 
 **NanoNathair is an automated and reproducible snakemake workflow tailored to Oxford Nanopore Sequencing reads. After easy installation with conda, it is straightforward to run on local computers where low-quality reads are filtered out for the generation of high-quality alignments against a reference genome**
 
