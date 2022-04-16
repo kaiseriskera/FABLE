@@ -7,8 +7,7 @@ vulcan_bench: ["PoreChop", "NanoFilt", "FastQC", "Pre-alignment_NanoPlot", "Vulc
 samples: FAR12603_pass_255c3309
 num: [0,2]
 aligners: ["vulcan","mm2"]
-test_dir: "/datastore/homes3/s1804374/kai_bench/test_dir"
-test_dir2: "/datastore/homes3/s1804374/kai_bench/test_dir2"
+work_dir_path: "./workdir"
 benchhead: ["s", "h:m:s", "max_rss", "max_vms", "max_uss", "max_pss", "io_in", "io_out", "mean_load", "cpu_time"]
 benchhead1: "sample/process, s, h:m:s, max_rss, max_vms, max_uss, max_pss, io_in, io_out, mean_load, cpu_time"
 benchhead2: ["sample/process", "s", "h:m:s", "max_rss", "max_vms", "max_uss", "max_pss", "io_in", "io_out", "mean_load", "cpu_time"]

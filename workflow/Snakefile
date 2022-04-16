@@ -8,7 +8,9 @@ VULCAN_BENCH = config["vulcan_bench"]
 SAMPLE = config["samples"]
 ALIGNER = config["aligners"]
 
-workdir: config['test_dir2']
+# create work directory differently according to the rule_opt, i.e. workdir_mm2 or workdir_vulcan.
+workdir: config['work_dir_path']+"_"+OPT
+
 # find way to put first4steps, vulcansteps and mm2steps into 3 sep. workdirs
 # so no need new data generation for first4 if user specifies mm2 after vulcan and vice versa
 import pandas as pd
@@ -27,7 +29,7 @@ rule all:
         "report/Benchmarks/bench.txt",
         "report/Benchmarks/benchfile.txt",
         "report/Samtools_Stats/Aligned_readsamstat.txt",
-        "report/Benchmarks/dfbench.png",
+        #"report/Benchmarks/dfbench.png",
         "report/Benchmarks/benchfile.csv",
         "report/Benchmarks/benchfile2.csv",
         "report/Benchmarks/benchfile1.csv"
