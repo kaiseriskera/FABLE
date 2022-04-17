@@ -16,12 +16,24 @@ conda install -c bioconda graphviz nanoplot nanofilt
 ### Directory Structure
 
 ```
-├── dag.svg
-├── data
+.
+├── config
+│   ├── config.yaml
+├── dag_mm2.svg
+├── dag_vulcan.svg
 ├── LICENSE
 ├── README.md
-├── report
+├── workdir_mm2
+│   ├── benchmarks
+│   ├── data
+│   └── report
+├── workdir_vulcan
+│   ├── benchmarks
+│   ├── data
+│   └── report
 └── workflow
+    ├── scripts
+    │   └── plot_benchmark.py
     └── Snakefile
 ```
 
@@ -44,6 +56,11 @@ snakemake --config rule_opt="vulcan" -c8 --dag | dot -Tsvg > dag_vulcan.svg
 <p align="left">
   <img src="dag_vulcan.svg" width="400" />
   <img src="dag_mm2.svg" width="400" />
+</p>
+
+<p align="left">
+  <img src="bench_vulcan.png" width="400" />
+  <img src="bench_mm2.png" width="400" />
 </p>
 
 ## NanoNathair workflow

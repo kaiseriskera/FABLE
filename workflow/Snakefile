@@ -22,17 +22,9 @@ rule all:
     input:
         "report/FastQC/PCNF_read_fastqc.html",
         "report/Pre-alignment_NanoPlot/PCNF_read_NanoPlot-report.html",
-        # "report/Post-alignment_NanoPlot/vulcan_PCNF_NanoPlot-report.html",
-        # "report/Post-alignment_NanoPlot/mm2_PCNF_NanoPlot-report.html",
-        #expand("report/Post-alignment_NanoPlot/{aligner}_PCNF_NanoPlot-report.html", aligner=ALIGNER, allow_missing=True),
         "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html",
-        "report/Benchmarks/bench.txt",
-        "report/Benchmarks/benchfile.txt",
-        "report/Samtools_Stats/Aligned_readsamstat.txt",
-        #"report/Benchmarks/dfbench.png",
-        "report/Benchmarks/benchfile.csv",
-        "report/Benchmarks/benchfile2.csv",
-        "report/Benchmarks/benchfile1.csv"
+        "report/benchmark.png"
+
 
 rule porechop:
     input: 
@@ -42,7 +34,7 @@ rule porechop:
     params:
         outdir="data/PoreChop"
     benchmark:
-        "benchmarks/PoreChop.txt"
+        "benchmarks/PoreChop.tsv"
     threads: 12
     shell: 
         "porechop -i {input} -t {threads} -o {output}"
@@ -57,7 +49,7 @@ rule nanofilt:
         headcrop="10",
         outdir="data/NanoFilt"
     benchmark:
-        "benchmarks/NanoFilt.txt"
+        "benchmarks/NanoFilt.tsv"
     shell:
         "gunzip -c {input} | NanoFilt -q {params.quality} --headcrop {params.headcrop} | gzip > {output}"
 
@@ -71,7 +63,7 @@ rule fastqc:
     params:
         outdir="report/FastQC"
     benchmark:
-        "benchmarks/FastQC.txt"
+        "benchmarks/FastQC.tsv"
     shell:
         "fastqc --threads {threads} --outdir {params.outdir} {input}"
 
@@ -86,7 +78,7 @@ rule pre_aln_NanoPlot:
         outdir="report/Pre-alignment_NanoPlot"
     threads: 8 
     benchmark:
-        "benchmarks/Pre-alignment_NanoPlot.txt"
+        "benchmarks/Pre-alignment_NanoPlot.tsv"
     shell:
         "NanoPlot -t {threads} --fastq {input} --outdir {params.outdir} -p {params.prefix}"
 
@@ -101,7 +93,7 @@ if OPT == 'vulcan':
             prefix="data/Vulcan/vulcan_PCNF"
         threads: 10
         benchmark:
-            "benchmarks/Vulcan.txt"
+            "benchmarks/Vulcan.tsv"
         shell:
             "vulcan -ont -t {threads} -r {input.ref} -i {input.fastq} -o {params.prefix}"
     
@@ -111,7 +103,7 @@ if OPT == 'vulcan':
         output:
             "data/Vulcan/vulcan_PCNF_90.bam.bai"
         benchmark:
-            "benchmarks/vulcan_bam_index.txt"
+            "benchmarks/vulcan_bam_index.tsv"
         shell:
             "samtools index {input}"
 
@@ -126,7 +118,7 @@ if OPT == 'vulcan':
             outdir="report/Post-alignment_NanoPlot"
         threads: 8
         benchmark:
-            "benchmarks/Post-alignment_NanoPlot.txt"
+            "benchmarks/Post-alignment_NanoPlot.tsv"
         shell:
             "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
     
@@ -145,70 +137,6 @@ if OPT == 'vulcan':
             "report/Samtools_Stats/Aligned_readsamstat.txt"
         shell:
             "mv {input} {output}"
-   
-    rule vulcan_bench_report:
-        input:
-            expand("benchmarks/{bench}.txt", bench=VULCAN_BENCH)
-            # vulcan_bench: ["PoreChop", "NanoFilt", "FastQC", "Pre-alignment_NanoPlot", "Vulcan", "vulcan_bam_index", "Post-alignment_NanoPlot"]
-        output:
-            'report/Benchmarks/bench.txt'
-        run:
-            import os
-            with open(output[0], 'w') as out:
-                for i in input:
-                    bench = i.split('.')[0][11:]
-                    for line in open(i): 
-                        benchline= bench + " " + line 
-                        # header = benchhead + "\n"
-                        # out.write(header + benchline)
-                        out.write(benchline)
-    
-    rule vulcan_final_bench:
-        input:
-            "report/Benchmarks/bench.txt"
-        output:
-            "report/Benchmarks/benchfile.txt"
-        shell:
-            # "awk 'NR % 2 == 0' {input} > {output}"
-            "sed '/io_out/d' {input} > {output}"
-
-    rule txttocsv:
-        input:
-            "report/Benchmarks/benchfile.txt"
-        output:
-            "report/Benchmarks/benchfile.csv"
-        run:
-            import pandas as pd
-            # # benchhead=["sample/process","s","h:m:s","max_rss","max_vms","max_uss","max_pss","io_in","io_out","mean_load","cpu_time"]
-            # df = pd.read_csv("report/Benchmarks/bench.txt")
-            # df.to_csv("report/Benchmarks/benchfile.csv", index=False)
-            with open("report/Benchmarks/benchfile.txt") as f, open("report/Benchmarks/benchfile.csv", 'w', newline='') as o:
-                writer = csv.writer(o)
-                for line in f:
-                    writer.writerow(line.split())
-                
-    rule header:
-        input:
-            "report/Benchmarks/benchfile.csv"
-        output:
-            "report/Benchmarks/benchfile1.csv"
-        run:
-            from pandas import read_csv 
-            df = read_csv("report/Benchmarks/benchfile.csv",header=None)
-            df.columns = ["process","s","h:m:s","max_rss","max_vms","max_uss","max_pss","io_in","io_out","mean_load","cpu_time"]
-            df.to_csv("report/Benchmarks/benchfile1.csv", index=False)
-
-    rule inversecsv:
-        input:
-            "report/Benchmarks/benchfile1.csv"
-        output:
-            "report/Benchmarks/benchfile2.csv"
-        run:
-            import re
-            import csv
-            from csv import reader, writer 
-            with open("report/Benchmarks/benchfile1.csv") as f, open("report/Benchmarks/benchfile2.csv", 'w', newline='') as fw: 
-                writer(fw, delimiter=',').writerows(zip(*reader(f, delimiter=',')))
 
     rule vulcan_nano_final:
         input:
@@ -226,7 +154,7 @@ else:
         output:
             "data/Minimap2/mm2_PCNF.sam"
         benchmark:
-            "benchmarks/Minimap2.txt"
+            "benchmarks/Minimap2.tsv"
         shell:
             "minimap2 -ax map-ont {input.ref} {input.fastq} > {output}"
 
@@ -236,7 +164,7 @@ else:
         output:
             "data/Minimap2/mm2_PCNF.bam"
         benchmark:
-            "benchmarks/mm2_sam_to_bam.txt"
+            "benchmarks/mm2_sam_to_bam.tsv"
         shell:
             "samtools sort {input} -o {output}"
             
@@ -246,7 +174,7 @@ else:
         output:
             "data/Minimap2/mm2_PCNF.bam.bai"
         benchmark:
-            "benchmarks/mm2_bam_index.txt"
+            "benchmarks/mm2_bam_index.tsv"
         shell:
             "samtools index {input}"
 
@@ -261,7 +189,7 @@ else:
             outdir="report/Post-alignment_NanoPlot/"
         threads: 8
         benchmark:
-            "benchmarks/Post-alignment_NanoPlot.txt"
+            "benchmarks/Post-alignment_NanoPlot.tsv"
         shell:
             "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
     
@@ -281,125 +209,6 @@ else:
         shell:
             "mv {input} {output}"
      
-    # benchhead= "sample/process  s  h:m:s  max_rss  max_vms  max_uss  max_pss  io_in  io_out  mean_load  cpu_time"
-    
-    rule mm2_bench_report:
-        input:
-            expand("benchmarks/{bench}.txt", bench=MM2_BENCH)
-        output:
-            'report/Benchmarks/bench.txt'
-        run:
-            import os
-            with open(output[0], 'w') as out:
-                for i in input:
-                    # bench = (config["samples"])+i.split('.')[0][10:]
-                    bench = i.split('.')[0][11:]
-                    for line in open(i):
-                        benchline= bench + " " + line 
-                        # header = benchhead + "\n"
-                        # out.write(header + benchline)
-                        out.write(benchline)
-     
-    #  remove alt. lines
-    rule mm2_final_bench:
-        input:
-            'report/Benchmarks/bench.txt'
-        output:
-            "report/Benchmarks/benchfile.txt"
-        shell:
-            # "awk 'NR == 1 || NR % 4 == 0' {input} > {output}" (alternative way)
-            # "sed -n '1~2!p' {input} > {output}"
-            "sed '/io_out/d' {input} > {output}"
-            # import pandas as pd
-            # df = pd.read_fwf('report/Benchmarks/bench.txt')
-            # df.to_csv("report/Benchmarks/benchfile.csv", index=False)
-            
-    rule txttocsv:
-        input:
-            "report/Benchmarks/benchfile.txt"
-        output:
-            "report/Benchmarks/benchfile.csv"
-        run:
-            import pandas as pd
-            # # benchhead=["sample/process","s","h:m:s","max_rss","max_vms","max_uss","max_pss","io_in","io_out","mean_load","cpu_time"]
-            # df = pd.read_csv("report/Benchmarks/bench.txt")
-            # df.to_csv("report/Benchmarks/benchfile.csv", index=False)
-            with open("report/Benchmarks/benchfile.txt") as f, open("report/Benchmarks/benchfile.csv", 'w', newline='') as o:
-                writer = csv.writer(o)
-                for line in f:
-                    writer.writerow(line.split())
-                
-    rule header:
-        input:
-            "report/Benchmarks/benchfile.csv"
-        output:
-            "report/Benchmarks/benchfile1.csv"
-        run:
-            from pandas import read_csv 
-            df = read_csv("report/Benchmarks/benchfile.csv",header=None)
-            df.columns = ["process","s","h:m:s","max_rss","max_vms","max_uss","max_pss","io_in","io_out","mean_load","cpu_time"]
-            df.to_csv("report/Benchmarks/benchfile1.csv", index=False)
-
-    rule inversecsv:
-        input:
-            "report/Benchmarks/benchfile1.csv"
-        output:
-            "report/Benchmarks/benchfile2.csv"
-        run:
-            import re
-            import csv
-            from csv import reader, writer 
-            with open("report/Benchmarks/benchfile1.csv") as f, open("report/Benchmarks/benchfile2.csv", 'w', newline='') as fw: 
-                writer(fw, delimiter=',').writerows(zip(*reader(f, delimiter=',')))
-
-    # plot bar chart
-    rule barchart:
-        input: 
-            "report/Benchmarks/benchfile2.csv"
-        output:
-            "report/Benchmarks/dfbench.png"
-        script:
-            "scripts/plot_benchmark.py"
-
-
-# #     # # # rule benchcsv:
-# #     # # #     input:
-# #     # # #         "report/Benchmarks/bench.csv"
-# #     # # #     output:
-# #     # # #         "report/Benchmarks/benchd.csv"
-# #     # # #     run:
-# #     # # #         benchdata = pd.read_csv("report/Benchmarks/bench.csv")
-# #     # # #         svalues=benchdata["s"].values
-# #     # # #         hms=benchdata["h:m:s"].values
-# #     # # #         max_rss=benchdata["max_rss"].values
-# #     # # #         max_vms=benchdata["max_vms"].values
-# #     # # #         max_uss=benchdata["max_uss"].values  
-# #     # # #         max_pss = benchdata["max_pss"].values
-# #     # # #         io_in = benchdata["io_in"].values
-# #     # #         io_out = benchdata["io_out"].values
-# #     # #         mean_load = benchdata["mean_load"].values
-# #     # #         cpu_time = benchdata["cpu_time"].values
-# #     # #         data = np.array(svalues, hms, max_rss, max_uss, max_pss, io_in, io_out,mean_load,cpu_time)
-# #     # #         # x = np.arange(data.shape[0])
-# #     # #         # dx = (np.arange(data.shape[1])-data.shape[1]/2.)/(data.shape[1]+2.)
-# #     # #         # d = 1./(data.shape[1]+2.)
-# #     # #         # fig, ax=plt.subplots()
-# #     # #         # for i in range(data.shape[1]):
-# #     # #         #     ax.bar(x+dx[i],data[:,i], width=d, label="label {}".format(i))
-# #     # #         # plt.legend(framealpha=1).draggable()
-# #     # #         # plt.show()
-# #     # #         # svalues=benchdata[:,0]
-# #     # #         # hmsvalues=benchdata[:,1]
-# #     # #         # maxrss=benchdata[:,2]
-# #     #         # maxuss=benchdata[:,3]
-# #     #         # maxpss=benchdata[:,4]
-# #     #         # ioin=benchdata[:,5]
-# #             # ioout=benchdata[:,6]
-# #             # meanload=benchdata[:,7]
-# #             # cputime=benchdata[:,8]
-            
-
-# #     #To dos: workaround to simplify the command line input to snakemake
     rule mm2_nano_final:
         input:
             "report/Post-alignment_NanoPlot/mm2_PCNF_NanoPlot-report.html"
@@ -409,3 +218,12 @@ else:
             "mv {input} {output}"
 
 # # # # # ======== End of Else Statement for mm2/vulcan option ====================================================
+
+rule plot_chart:
+    input: 
+        "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html"
+    output:
+        "report/benchmark.png"
+    script:
+        "scripts/plot_benchmark.py"
+
