@@ -11,8 +11,6 @@ ALIGNER = config["aligners"]
 # create work directory differently according to the rule_opt, i.e. workdir_mm2 or workdir_vulcan.
 workdir: config['work_dir_path']+"_"+OPT
 
-# find way to put first4steps, vulcansteps and mm2steps into 3 sep. workdirs
-# so no need new data generation for first4 if user specifies mm2 after vulcan and vice versa
 import pandas as pd
 import csv
 import numpy as np
@@ -23,6 +21,7 @@ rule all:
         "report/FastQC/PCNF_read_fastqc.html",
         "report/Pre-alignment_NanoPlot/PCNF_read_NanoPlot-report.html",
         "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html",
+        "report/Samtools_Stats/Aligned_readsamstat.txt",
         "report/benchmark.png"
 
 
@@ -80,7 +79,7 @@ rule pre_aln_NanoPlot:
     benchmark:
         "benchmarks/Pre-alignment_NanoPlot.tsv"
     shell:
-        "NanoPlot -t {threads} --fastq {input} --outdir {params.outdir} -p {params.prefix}"
+        "NanoPlot -t {threads} --N50 --fastq {input} --outdir {params.outdir} -p {params.prefix}"
 
 if OPT == 'vulcan':
     rule vulcan:
@@ -91,9 +90,10 @@ if OPT == 'vulcan':
             "data/Vulcan/vulcan_PCNF_90.bam"
         params:
             prefix="data/Vulcan/vulcan_PCNF"
-        threads: 10
+        threads: 20
         benchmark:
             "benchmarks/Vulcan.tsv"
+
         shell:
             "vulcan -ont -t {threads} -r {input.ref} -i {input.fastq} -o {params.prefix}"
     
@@ -120,7 +120,7 @@ if OPT == 'vulcan':
         benchmark:
             "benchmarks/Post-alignment_NanoPlot.tsv"
         shell:
-            "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
+            "NanoPlot -t {threads} --N50 --bam {input} -p {params.prefix} -o {params.outdir}"
     
     rule samstats:
         input:  
@@ -191,7 +191,7 @@ else:
         benchmark:
             "benchmarks/Post-alignment_NanoPlot.tsv"
         shell:
-            "NanoPlot -t {threads} --bam {input} -p {params.prefix} -o {params.outdir}"
+            "NanoPlot -t {threads} --N50 --bam {input} -p {params.prefix} -o {params.outdir}"
     
     rule samstats:
         input:  
@@ -221,6 +221,7 @@ else:
 
 rule plot_chart:
     input: 
+        "report/Pre-alignment_NanoPlot/PCNF_read_NanoPlot-report.html",
         "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html"
     output:
         "report/benchmark.png"
