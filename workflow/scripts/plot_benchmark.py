@@ -17,7 +17,8 @@ for bench_tsv_file in bench_files:
     tmp_df.insert(0,"Ops",bench_tsv_file.stem)
     df = df.append(tmp_df,ignore_index=True)
 
-df['cumsum_s'] = df['s'].cumsum()
+# df['cumsum_s'] = df['s'].cumsum()
+df['cumsum_cpu_time'] = df('cpu_time'].cumsum()
 
 print(df)
 x_idx = np.arange(df.shape[0])
@@ -25,21 +26,21 @@ x_idx = np.arange(df.shape[0])
 fig, ax = plt.subplots()
 
 bar = ax.bar(x=x_idx,
-             height=df['s'],
+             height=df['cpu_time'],
              align='center',
              tick_label=df['Ops'],
              alpha=0.7
              )
 
 line = ax.plot(x_idx,
-                df['cumsum_s'],
+                df['cumsum_cpu_time'],
                 ls='--',
                 marker='o',
                 color='r'
                 )
 #plt.ylim([0,500])
 plt.tight_layout()
-ax.set_xlabel('time_s')
+ax.set_xlabel('time_cpu_time')
 ax.set_xticklabels(df['Ops'],rotation = 90)
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, ncol=5)
 plt.savefig(snakemake.output[0], bbox_inches="tight")
