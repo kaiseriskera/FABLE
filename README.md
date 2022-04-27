@@ -1,8 +1,8 @@
-# NanoNathair
+# FABLE
 <p align="center">
   <img width="366" height="280" src="img6.jpg">
 
-**NanoNathair is an automated and reproducible snakemake workflow tailored to Oxford Nanopore Sequencing reads. After easy installation with conda, it is straightforward to run on local computers, filtering out and trimming low-quality reads to generate high-quality alignments against a reference genome**
+**FABLE is an automated and reproducible snakemake workflow tailored to Oxford Nanopore Sequencing reads. After easy installation with conda, it is straightforward to run on local computers, filtering out and trimming low-quality reads to generate high-quality alignments against a reference genome**
 
 ### Pre-requisite
 ```bash
@@ -63,7 +63,7 @@ snakemake --config rule_opt="vulcan" -c8 --dag | dot -Tsvg > dag_vulcan.svg
   <img src="bench_mm2.png" width="400" />
 </p>
 
-## NanoNathair workflow
+## FABLE's workflow
 
 PoreChop and NanoFilt are performed on input fastq files, followed by FastQC and NanoPlot for QC analysis and visualisation. Next, alignment results achieved either by Vulcan or Minimap2 can be studied from reports generated. 
 
