@@ -18,30 +18,46 @@ for bench_tsv_file in bench_files:
     df = df.append(tmp_df,ignore_index=True)
 
 # df['cumsum_s'] = df['s'].cumsum()
-df['cumsum_cpu_time'] = df('cpu_time'].cumsum()
+df['cumsum_cpu_time'] = df['cpu_time'].cumsum()
+df['cumsum_max_vms'] = df['max_vms'].cumsum()
 
 print(df)
 x_idx = np.arange(df.shape[0])
 
-fig, ax = plt.subplots()
+fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(10, 3))
 
-bar = ax.bar(x=x_idx,
+cpu_bar = ax1.bar(x=x_idx,
              height=df['cpu_time'],
              align='center',
              tick_label=df['Ops'],
              alpha=0.7
              )
 
-line = ax.plot(x_idx,
+cpu_line = ax1.plot(x_idx,
                 df['cumsum_cpu_time'],
                 ls='--',
                 marker='o',
                 color='r'
                 )
+
+vms_bar = ax2.bar(x=x_idx,
+             height=df['max_vms'],
+             align='center',
+             tick_label=df['Ops'],
+             alpha=0.7
+             )
+
+vms_line = ax2.plot(x_idx,
+                df['cumsum_max_vms'],
+                ls='--',
+                marker='o',
+                color='r'              
 #plt.ylim([0,500])
 plt.tight_layout()
-ax.set_xlabel('time_cpu_time')
-ax.set_xticklabels(df['Ops'],rotation = 90)
+ax1.set_xlabel('time_cpu_time')
+ax1.set_xticklabels(df['Ops'],rotation = 90)
+ax2.set_xlabel('time_max_vms')
+ax2.set_xticklabels(df['Ops'],rotation = 90)
 plt.legend(loc='upper center', bbox_to_anchor=(0.5, -0.1), fancybox=True, ncol=5)
 plt.savefig(snakemake.output[0], bbox_inches="tight")
 #plt.show()
