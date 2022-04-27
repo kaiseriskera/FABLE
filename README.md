@@ -1,7 +1,7 @@
 # FABLE ![image](https://user-images.githubusercontent.com/96602087/165528002-a64d46d6-5fb1-4fa4-9d61-8d7ef5cf6ad7.png)
 
 <p align="center">
-  <img width="466" height="380" src="FABLE.png">
+  <img width="466" height="380" src="FABLE logo.png">
 
 **FABLE is an automated and reproducible snakemake workflow tailored to Oxford Nanopore Sequencing reads. After easy installation with conda, it is straightforward to run on local computers, filtering out and trimming low-quality reads to generate high-quality alignments against a reference genome**
 
