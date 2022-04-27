@@ -1,6 +1,6 @@
 # FABLE
 <p align="center">
-  <img width="366" height="280" src="img6.jpg">
+  <img width="366" height="280" src="FABLE.png">
 
 **FABLE is an automated and reproducible snakemake workflow tailored to Oxford Nanopore Sequencing reads. After easy installation with conda, it is straightforward to run on local computers, filtering out and trimming low-quality reads to generate high-quality alignments against a reference genome**
 
