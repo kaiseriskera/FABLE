@@ -13,7 +13,7 @@ for bench_tsv_file in bench_files:
     tmp_df = pd.read_csv(bench_tsv_file, sep='\t')
     tmp_df.insert(0,"Process",bench_tsv_file.stem)
     df = df.append(tmp_df,ignore_index=True)
-    df['Process'] = pd.Categorical(df.Process, categories=["PoreChop", "NanoQ", "FastQC", "Pre-alignment_NanoPlot", "Minimap2", "Post-alignment_NanoPlot" ], ordered=True)
+    df['Process'] = pd.Categorical(df.Process, categories=["Porechop", "NanoQ", "FastQC", "Pre-alignment_NanoPlot", "Minimap2", "Post-alignment_NanoPlot" ], ordered=True)
     df=df.sort_values('Process')
     df = df.reset_index(drop=True)
 
@@ -29,7 +29,7 @@ x_idx = np.arange(df.shape[0])
 
 fig, (ax1,ax2)= plt.subplots(nrows=1, ncols=2, figsize=(12, 4))
 
-c = ['hotpink','palevioletred', 'pink', 'plum','thistle','lavender']
+c = ['hotpink', 'palevioletred', 'pink', 'plum','thistle','lavender']
 
 # bar plot for cpu_time on ax1
 df.plot(x='Process', y='cpu_time', kind='bar', color=c, ax=ax1)
@@ -46,10 +46,10 @@ df.plot(x='Process', y='cumsum_max_vms', kind='line', marker='o', markersize=2, 
 plt.tight_layout()
 ax1.title.set_text('CPU time')
 ax2.title.set_text('Maximum VMS')
-ax1.set_xticklabels(df['Process'],rotation = 90)
+ax1.set_xticklabels(df['Process'],rotation = 30, horizontalalignment='right', fontsize='small')
 ax1.set_ylabel('Seconds')
-ax2.set_xticklabels(df['Process'],rotation = 90)
+ax2.set_xticklabels(df['Process'],rotation = 30, horizontalalignment='right', fontsize='small')
 ax2.set_ylabel('MegaBytes')
-ax1.legend(loc='upper left', bbox_to_anchor=(0.01, 0.98), fancybox=True, ncol=1)
-ax2.legend(loc='upper left', bbox_to_anchor=(0.01, 0.98), fancybox=True, ncol=1)
+ax1.legend(loc='upper left', bbox_to_anchor=(0, 1.17), fontsize=7, fancybox=True, ncol=1)
+ax2.legend(loc='upper left', bbox_to_anchor=(0, 1.17), fontsize=7, fancybox=True, ncol=1)
 plt.savefig(snakemake.output[0], bbox_inches="tight")
