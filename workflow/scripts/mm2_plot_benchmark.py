@@ -3,23 +3,24 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pathlib, os
 
-#Create an empty dataframe first.
+# Create an empty dataframe 
 df = pd.DataFrame()
 
-# get list of benchmark files in the 
+# get list of benchmark files 
 bench_files = pathlib.Path("benchmarks").glob("*.tsv")
-# bench_files = sorted(bench_files, key=os.path.getmtime)
 
-#for bench_tsv_file in pathlib.Path('./workdir_mm2/benchmarks').glob("*.tsv"):
 for bench_tsv_file in bench_files:
-    #print(bench_tsv_file)
     tmp_df = pd.read_csv(bench_tsv_file, sep='\t')
     tmp_df.insert(0,"Process",bench_tsv_file.stem)
     df = df.append(tmp_df,ignore_index=True)
     df['Process'] = pd.Categorical(df.Process, categories=["PoreChop", "NanoQ", "FastQC", "Pre-alignment_NanoPlot", "Minimap2", "Post-alignment_NanoPlot" ], ordered=True)
     df=df.sort_values('Process')
     df = df.reset_index(drop=True)
-    
+
+# replace negligible values to 0
+df = df.replace('-', np.NaN)
+df=df.replace(np.nan, 0)
+
 df['cumsum_cpu_time'] = df['cpu_time'].cumsum()
 df['cumsum_max_vms']=df['max_vms'].cumsum()
 
