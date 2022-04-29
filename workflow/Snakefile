@@ -1,14 +1,14 @@
 configfile: "config/config.yaml"
 
 OPT = config["rule_opt"]
-TESTPATH = config["fastq_data"]
+TESTPATH = config["87.5_badreads"]
 ref_genome = config["reference"]
 # MM2_BENCH = config["mm2_bench"]
 # VULCAN_BENCH = config["vulcan_bench"]
 
 
 # create work directory differently according to the rule_opt, i.e. workdir_mm2 or workdir_vulcan.
-workdir: config['work_dir_path']+"_"+OPT
+workdir: config['work_dir_path'] + "_" + config['sample'] + "_" + OPT
 
 import pandas as pd
 import csv
@@ -145,8 +145,9 @@ if OPT == 'vulcan':
     
     rule vulcan_plot_chart:
         input:
-            "report/Pre-alignment_NanoPlot/PCNQ_read_NanoPlot-report.html",
-            "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html"
+            "benchmarks/Pre-alignment_NanoPlot.tsv",
+            "benchmarks/Post-alignment_NanoPlot.tsv",
+            "benchmarks/FastQC.tsv"
         output:
             "report/benchmark.png"
         script:
@@ -233,8 +234,9 @@ else:
 
     rule mm2_plot_chart:
         input:
-            "report/Pre-alignment_NanoPlot/PCNQ_read_NanoPlot-report.html",
-            "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html"
+            "benchmarks/Pre-alignment_NanoPlot.tsv",
+            "benchmarks/Post-alignment_NanoPlot.tsv",
+            "benchmarks/FastQC.tsv"
         output:
             "report/benchmark.png"
         script:
