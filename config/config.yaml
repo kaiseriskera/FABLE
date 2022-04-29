@@ -1,7 +1,17 @@
+# ====================================== to be left unmodified ======================================
 rule_opt: "vulcan"
+work_dir_path: "./workdir"
+
+# ====================================== to be modified by user ======================================
+# sample name 
+sample: "87.5badreads"
+
+# path to input fastq file(s)
 fastq_data: "/datastore/homes3/s1804374/kai_lambda/fastqgz_files.fastq.gz/"
 test_path: "/datastore/homes3/s1804374/kai_lambda/test_fastqgz_files/"
+77.5_badreads: "/datastore/homes3/s1804374/kai_lambda/badreads/77.5_badreads.fastq.gz"
+87.5_badreads: "/datastore/homes3/s1804374/kai_lambda/badreads/77.5_badreads.fastq.gz"
+97.5_badreads: "/datastore/homes3/s1804374/kai_lambda/badreads/97.5_badreads.fastq.gz"
+
+#  path to reference genome
 reference: "/datastore/homes3/s1804374/kai_lambda/J02459.fasta"
-mm2_bench: ["PoreChop", "NanoFilt", "FastQC", "Pre-alignment_NanoPlot", "Minimap2", "Post-alignment_NanoPlot"]
-vulcan_bench: ["PoreChop", "NanoFilt", "FastQC", "Pre-alignment_NanoPlot", "Vulcan", "Post-alignment_NanoPlot"]
-work_dir_path: "./workdir"
