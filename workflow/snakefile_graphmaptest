@@ -1,0 +1,259 @@
+configfile: "config/config.yaml"
+
+OPT = config["rule_opt"]
+TESTPATH = config["fastq_data"]
+ref_genome = config["reference"]
+
+# create work directory differently according to the rule_opt, i.e. workdir_mm2 or workdir_vulcan.
+workdir: config['work_dir_path'] + "_" + config['sample'] + "_" + OPT
+
+import pandas as pd
+import csv
+import numpy as np
+import matplotlib.pyplot as plt
+
+rule all:
+    input:
+        "report/FastQC/PCNQ_read_fastqc.html",
+        "report/Pre-alignment_NanoPlot/PCNQ_read_NanoPlot-report.html",
+        "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html",
+        "report/Samtools_Stats/Aligned_readsamstat.txt",
+        "report/benchmark.png",
+        "report/MultiQC/multiqc_report.html"
+
+rule Porechop:
+    input: 
+        TESTPATH
+    output:
+        "data/Porechop/PC_read.fastq.gz"
+    params:
+        outdir="data/Porechop"
+    benchmark:
+        "benchmarks/Porechop.tsv"
+    threads: 12
+    shell: 
+        "porechop -i {input} -t {threads} -o {output}"
+        
+rule NanoQ:
+    input: 
+        "data/Porechop/PC_read.fastq.gz"
+    output:
+        "data/NanoQ/PCNQ_read.fastq.gz"
+    params:
+        minquality="10",
+        outdir="data/NanoQ"
+    benchmark:
+        "benchmarks/NanoQ.tsv"
+    shell:
+        # "nanoq -i {input} -q {params.minquality} > data/NanoQ/PCNQ_read.fastq.gz > report/NanoQ/report.txt"
+        # "gunzip -c {input} | NanoFilt -q {params.quality} --headcrop {params.headcrop} | gzip > {output}"
+        "nanoq -i {input} -q {params.minquality} -o {output} -s -vv" 
+
+rule FastQC:
+    input:
+        "data/NanoQ/PCNQ_read.fastq.gz"
+    output:
+        "report/FastQC/PCNQ_read_fastqc.html",
+        "report/FastQC/PCNQ_read_fastqc.zip"
+    threads: 8
+    params:
+        outdir="report/FastQC"
+    benchmark:
+        "benchmarks/FastQC.tsv"
+    shell:
+        "fastqc --threads {threads} --outdir {params.outdir} {input}"
+
+rule Pre_alignment_NanoPlot:
+    input:
+        "data/NanoQ/PCNQ_read.fastq.gz"
+    output:
+        "report/Pre-alignment_NanoPlot/PCNQ_read_NanoPlot-report.html",
+        "report/Pre-alignment_NanoPlot/PCNQ_read_NanoStats.txt"
+    params:
+        prefix="PCNQ_read_",
+        outdir="report/Pre-alignment_NanoPlot"
+    threads: 8 
+    benchmark:
+        "benchmarks/Pre-alignment_NanoPlot.tsv"
+    shell:
+        "NanoPlot -t {threads} --N50 --fastq {input} --outdir {params.outdir} -p {params.prefix}"
+
+if OPT == 'vulcan':
+    rule Vulcan:
+        input:
+            ref = ref_genome,
+            fastq="data/NanoQ/PCNQ_read.fastq.gz"
+        output:
+            "data/Vulcan/vulcan_PCNQ_90.bam"
+        params:
+            prefix="data/Vulcan/vulcan_PCNQ"
+        threads: 10
+        benchmark:
+            "benchmarks/Vulcan.tsv"
+        shell:
+            "vulcan -ont -t {threads} -r {input.ref} -i {input.fastq} -o {params.prefix}"
+    
+    rule Vulcan_bam_index:
+        input:
+            "data/Vulcan/vulcan_PCNQ_90.bam",
+        output:
+            "data/Vulcan/vulcan_PCNQ_90.bam.bai"
+        shell:
+            "samtools index {input}"
+
+    rule Vulcan_NanoPlot:
+        input:
+            "data/Vulcan/vulcan_PCNQ_90.bam"
+        output:
+            "report/Post-alignment_NanoPlot/vulcan_PCNQ_NanoPlot-report.html",
+            "report/Post-alignment_NanoPlot/vulcan_PCNQ_NanoStats.txt"
+        params:
+            prefix="vulcan_PCNQ_",
+            outdir="report/Post-alignment_NanoPlot"
+        threads: 8
+        benchmark:
+            "benchmarks/Post-alignment_NanoPlot.tsv"
+        shell:
+            "NanoPlot -t {threads} --N50 --bam {input} -p {params.prefix} -o {params.outdir}"
+    
+    rule Samstats:
+        input:  
+            "data/Vulcan/vulcan_PCNQ_90.bam"
+        output:
+            "report/Samtools_Stats/vulcan_PCNQ_90.txt"
+        shell:
+            "samtools stats {input} | grep ^SN | cut -f 2- > {output}"
+        
+    rule Samstats_final:
+        input:
+            "report/Samtools_Stats/vulcan_PCNQ_90.txt"
+        output:
+            "report/Samtools_Stats/Aligned_readsamstat.txt"
+        shell:
+            "mv {input} {output}"
+
+    rule NanoPlot_final:
+        input:
+            "report/Post-alignment_NanoPlot/vulcan_PCNQ_NanoPlot-report.html"
+        output:
+            "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html"
+        shell:
+            "mv {input} {output}"
+    
+    rule vulcan_plot_chart:
+        input:
+            "benchmarks/Pre-alignment_NanoPlot.tsv",
+            "benchmarks/Post-alignment_NanoPlot.tsv",
+            "benchmarks/FastQC.tsv"
+        output:
+            "report/benchmark.png"
+        script:
+            "scripts/vulcan_plot_benchmark.py"
+    
+    rule MultiQC:
+        input:
+            "report/FastQC/PCNQ_read_fastqc.zip",
+            # "report/"
+            "report/Samtools_Stats/Aligned_readsamstat.txt",
+            "report/Post-alignment_NanoPlot/vulcan_PCNQ_NanoStats.txt",
+            "report/Pre-alignment_NanoPlot/PCNQ_read_NanoStats.txt"
+        output:
+            "report/MultiQC/multiqc_report.html"
+        shell:
+            "multiqc {input} -o report/MultiQC"
+
+else:
+    rule Graphmap:
+        input:
+            ref = ref_genome,
+            fastq="data/NanoQ/PCNQ_read.fastq.gz"
+        output:
+            "data/Graphmap/graphmap_PCNQ.sam"
+        threads: 8 
+        benchmark:
+            "benchmarks/Graphmap.tsv"
+        shell:
+            "graphmap align -r {input.ref} -d {input.fastq} -o {output}"
+
+    rule sam_to_bam:
+        input:
+            "data/Graphmap/graphmap_PCNQ.sam"
+        output:
+            "data/Graphmap/graphmap_PCNQ.bam"
+        shell:
+            "samtools sort {input} -o {output}"
+            
+    rule graphmap_bam_index:
+        input:
+            "data/Graphmap/graphmap_PCNQ.bam"
+        output:
+            "data/Graphmap/graphmap_PCNQ.bam.bai"
+        shell:
+            "samtools index {input}"
+
+    rule Graphmap_NanoPlot:
+        input:
+            "data/Graphmap/graphmap_PCNQ.bam"
+        output:
+            "report/Post-alignment_NanoPlot/graphmap_PCNQ_NanoPlot-report.html",
+            "report/Post-alignment_NanoPlot/graphmap_PCNQ_NanoStats.txt"
+        params:
+            prefix="graphmap_PCNQ_",
+            outdir="report/Post-alignment_NanoPlot/"
+        threads: 8
+        benchmark:
+            "benchmarks/Post-alignment_NanoPlot.tsv"
+        shell:
+            "NanoPlot -t {threads} --N50 --bam {input} -p {params.prefix} -o {params.outdir}"
+    
+    rule Samstats:
+        input:  
+            "data/Graphmap/graphmap_PCNQ.bam"
+        output:
+            "report/Samtools_Stats/graphmap_PCNQ.txt"
+        shell:
+            "samtools stats {input} | grep ^SN | cut -f 2- > {output}"
+
+    rule Samstats_final:
+        input:
+            "report/Samtools_Stats/graphmap_PCNQ.txt"
+        output:
+            "report/Samtools_Stats/Aligned_readsamstat.txt"
+        shell:
+            "mv {input} {output}"
+     
+    rule NanoPlot_final:
+        input:
+            "report/Post-alignment_NanoPlot/graphmap_PCNQ_NanoPlot-report.html"
+        output:
+            "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html"
+        shell:
+            "mv {input} {output}"
+
+    rule mm2_plot_chart:
+        input:
+            "benchmarks/Pre-alignment_NanoPlot.tsv",
+            "benchmarks/Post-alignment_NanoPlot.tsv",
+            "benchmarks/FastQC.tsv"
+        output:
+            "report/benchmark.png"
+        script:
+            "scripts/graphmap_plot_benchmark.py"
+
+    rule MultiQC:
+        input:
+            "report/FastQC/PCNQ_read_fastqc.zip",
+            # "report/"
+            "report/Samtools_Stats/Aligned_readsamstat.txt",
+            "report/Post-alignment_NanoPlot/graphmap_PCNQ_NanoStats.txt",
+            "report/Pre-alignment_NanoPlot/PCNQ_read_NanoStats.txt"
+        output:
+            "report/MultiQC/multiqc_report.html"
+        shell:
+            "multiqc {input} --outdir report/MultiQC"
+
+
+# ================================ End of Else Statement for mm2/vulcan option ================================ 
+
+
+
