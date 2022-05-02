@@ -1,11 +1,8 @@
 configfile: "config/config.yaml"
 
 OPT = config["rule_opt"]
-TESTPATH = config["87.5_badreads"]
+TESTPATH = config["77.5_badreads"]
 ref_genome = config["reference"]
-# MM2_BENCH = config["mm2_bench"]
-# VULCAN_BENCH = config["vulcan_bench"]
-
 
 # create work directory differently according to the rule_opt, i.e. workdir_mm2 or workdir_vulcan.
 workdir: config['work_dir_path'] + "_" + config['sample'] + "_" + OPT
@@ -22,6 +19,7 @@ rule all:
         "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html",
         "report/Samtools_Stats/Aligned_readsamstat.txt",
         "report/benchmark.png",
+        "data/GenomeCov/Vulcan_bigwig.bw",
         "report/MultiQC/multiqc_report.html"
 
 
@@ -29,18 +27,18 @@ rule Porechop:
     input: 
         TESTPATH
     output:
-        "data/PoreChop/PC_read.fastq.gz"
+        "data/Porechop/PC_read.fastq.gz"
     params:
-        outdir="data/PoreChop"
+        outdir="data/Porechop"
     benchmark:
-        "benchmarks/PoreChop.tsv"
+        "benchmarks/Porechop.tsv"
     threads: 12
     shell: 
         "porechop -i {input} -t {threads} -o {output}"
         
 rule NanoQ:
     input: 
-        "data/PoreChop/PC_read.fastq.gz"
+        "data/Porechop/PC_read.fastq.gz"
     output:
         "data/NanoQ/PCNQ_read.fastq.gz"
     params:
@@ -49,6 +47,7 @@ rule NanoQ:
     benchmark:
         "benchmarks/NanoQ.tsv"
     shell:
+        # "nanoq -i {input} -q {params.minquality} > data/NanoQ/PCNQ_read.fastq.gz > report/NanoQ/report.txt"
         # "gunzip -c {input} | NanoFilt -q {params.quality} --headcrop {params.headcrop} | gzip > {output}"
         "nanoq -i {input} -q {params.minquality} -o {output} -s -vv" 
 
@@ -90,7 +89,7 @@ if OPT == 'vulcan':
             "data/Vulcan/vulcan_PCNQ_90.bam"
         params:
             prefix="data/Vulcan/vulcan_PCNQ"
-        threads: 20
+        threads: 10
         benchmark:
             "benchmarks/Vulcan.tsv"
         shell:
@@ -118,6 +117,31 @@ if OPT == 'vulcan':
             "benchmarks/Post-alignment_NanoPlot.tsv"
         shell:
             "NanoPlot -t {threads} --N50 --bam {input} -p {params.prefix} -o {params.outdir}"
+    
+    rule genomecov:
+        input:
+            "data/Vulcan/vulcan_PCNQ_90.bam"
+        output:
+            "data/GenomeCov/vulcan_PCNQ_90.bdg"
+        shell:
+            "bedtools genomecov -ibam {input} -bg > {output}"
+    
+    rule chrsize:
+        input:
+            ref_genome
+        output:
+            "data/GenomeCov/chromSizes.txt"
+        shell:
+            "faSize -detailed -tab {input} > {output}"
+    
+    rule bedGraphtobigWig:
+        input:
+            chrsize = "data/GenomeCov/chromSizes.txt",
+            bedgraph = "data/GenomeCov/vulcan_PCNQ_90.bdg"
+        output:
+            "data/GenomeCov/Vulcan_bigwig.bw"
+        shell:
+            "bedGraphToBigWig {input.bedgraph} {input.chrsize} {output}"
     
     rule Samstats:
         input:  
@@ -208,6 +232,31 @@ else:
         shell:
             "NanoPlot -t {threads} --N50 --bam {input} -p {params.prefix} -o {params.outdir}"
     
+    rule mm2_genomecov:
+        input:
+            "data/Minimap2/mm2_PCNQ_90.bam"
+        output:
+            "data/GenomeCov/mm2_PCNQ_90.bdg"
+        shell:
+            "bedtools genomecov -ibam {input} -bg > {output}"
+    
+    rule mm2_chrsize:
+        input:
+            ref_genome
+        output:
+            "data/GenomeCov/chromSizes.txt"
+        shell:
+            "faSize -detailed -tab {input} > {output}"
+    
+    rule mm2_bedGraphtobigWig:
+        input:
+            chrsize = "data/GenomeCov/chromSizes.txt",
+            bedgraph = "data/GenomeCov/vulcan_PCNQ_90.bdg"
+        output:
+            "data/GenomeCov/Minimap2_bigwig.bw"
+        shell:
+            "bedGraphToBigWig {input.bedgraph} {input.chrsize} {output}"
+    
     rule Samstats:
         input:  
             "data/Minimap2/mm2_PCNQ.bam"
@@ -255,7 +304,7 @@ else:
             "multiqc {input} --outdir report/MultiQC"
 
 
-# # # # # ======== End of Else Statement for mm2/vulcan option ====================================================
+# ================================ End of Else Statement for mm2/vulcan option ================================ 
 
 
 
