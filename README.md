@@ -5,15 +5,17 @@
 
 **FABLE is an automated and reproducible snakemake workflow tailored to Oxford Nanopore Sequencing reads. After easy installation with conda, it is straightforward to run on local computers, filtering out and trimming low-quality reads to generate high-quality alignments against a reference genome**
 
-### Pre-requisite
+### Git clone the project from Github
 ```bash
-conda activate snakemake 
+git clone https://github.com/kaiseriskera/FABLE.git
+cd FABLE
 ```
-make sure your snakemake environment includes the followings:
+### Setup the conda environment
+In order to run the pipeline, make sure all the necessary tools are installed in the conda environment. The environment yaml file can be found in env/environment.yml.
 ```bash
-conda install -c bioconda graphviz nanoplot nanofilt
+conda env create -f ./env/environment.yml
+conda activate fable
 ```
-
 ### Directory Structure
 
 ```
@@ -22,6 +24,8 @@ conda install -c bioconda graphviz nanoplot nanofilt
 │   ├── config.yaml
 ├── dag_mm2.svg
 ├── dag_vulcan.svg
+├── env
+│   └── environment.yml
 ├── LICENSE
 ├── README.md
 ├── workdir_mm2
@@ -36,6 +40,7 @@ conda install -c bioconda graphviz nanoplot nanofilt
     ├── scripts
     │   └── plot_benchmark.py
     └── Snakefile
+
 ```
 
 ### Snakemake
@@ -66,12 +71,12 @@ snakemake --config rule_opt="vulcan" -c8 --dag | dot -Tsvg > dag_vulcan.svg
 
 ## FABLE's workflow
 
-PoreChop and NanoFilt are performed on input fastq files, followed by FastQC and NanoPlot for QC analysis and visualisation. Next, alignment results achieved either by Vulcan or Minimap2 can be studied from reports generated. 
+PoreChop and NanoQ are performed on input fastq files, followed by FastQC and NanoPlot for QC analysis and visualisation. Next, alignment results achieved either by Vulcan or Minimap2 can be studied from reports generated. 
 
 * PRE-ALIGNMENT:
     1. PoreChop
       - removes adapters from ONT's reads and merges multiple fastq files if directory is provided as input
-    2. NanoFilt
+    2. NanoQ
       - filters reads depending on their quality + option for headcrop to trim nucleotides from start of read
       - default parameters filters out reads with quality score below 10 and trims the first 10 nucleotides from start of read
     3. FastQC and Pre-alignment NanoPlot
