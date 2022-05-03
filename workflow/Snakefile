@@ -1,7 +1,7 @@
 configfile: "config/config.yaml"
 
 OPT = config["rule_opt"]
-TESTPATH = config["77.5_badreads"]
+TESTPATH = config["lambda_data"]
 ref_genome = config["reference"]
 
 # create work directory differently according to the rule_opt, i.e. workdir_mm2 or workdir_vulcan.
@@ -19,7 +19,7 @@ rule all:
         "report/Post-alignment_NanoPlot/Aligned_NanoPlot-report.html",
         "report/Samtools_Stats/Aligned_readsamstat.txt",
         "report/benchmark.png",
-        "data/GenomeCov/Vulcan_bigwig.bw",
+        "data/GenomeCov/Aligned_bigwig.bw",
         "report/MultiQC/multiqc_report.html"
 
 
@@ -139,7 +139,7 @@ if OPT == 'vulcan':
             chrsize = "data/GenomeCov/chromSizes.txt",
             bedgraph = "data/GenomeCov/vulcan_PCNQ_90.bdg"
         output:
-            "data/GenomeCov/Vulcan_bigwig.bw"
+            "data/GenomeCov/Aligned_bigwig.bw"
         shell:
             "bedGraphToBigWig {input.bedgraph} {input.chrsize} {output}"
     
@@ -234,7 +234,7 @@ else:
     
     rule mm2_genomecov:
         input:
-            "data/Minimap2/mm2_PCNQ_90.bam"
+            "data/Minimap2/mm2_PCNQ.bam"
         output:
             "data/GenomeCov/mm2_PCNQ_90.bdg"
         shell:
@@ -251,9 +251,9 @@ else:
     rule mm2_bedGraphtobigWig:
         input:
             chrsize = "data/GenomeCov/chromSizes.txt",
-            bedgraph = "data/GenomeCov/vulcan_PCNQ_90.bdg"
+            bedgraph = "data/GenomeCov/mm2_PCNQ_90.bdg"
         output:
-            "data/GenomeCov/Minimap2_bigwig.bw"
+            "data/GenomeCov/Aligned_bigwig.bw"
         shell:
             "bedGraphToBigWig {input.bedgraph} {input.chrsize} {output}"
     
