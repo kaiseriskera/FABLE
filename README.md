@@ -7,8 +7,8 @@
 
 ### Git clone the project from Github
 ```bash
-git clone https://github.com/kaiseriskera/ngs_bench.git
-cd ngs_bench
+git clone https://github.com/kaiseriskera/FABLE.git
+cd FABLE
 ```
 ### Setup the conda environment
 In order to run the pipeline, make sure all the necessary tools are installed in the conda environment. The environment yaml file can be found in env/environment.yml.
