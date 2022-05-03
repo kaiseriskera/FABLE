@@ -66,7 +66,7 @@ snakemake --config rule_opt="vulcan" -c8 --dag | dot -Tsvg > dag_vulcan.svg
 
 <p align="left">
   <img src="bench_vulcan.png" width="400" />
-  <img src="bench_mm2.png" width="400" />
+  <img src="mm2_benchmark.png" width="400" />
 </p>
 
 ## FABLE's workflow
