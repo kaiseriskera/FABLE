@@ -71,12 +71,12 @@ snakemake --config rule_opt="vulcan" -c8 --dag | dot -Tsvg > dag_vulcan.svg
 
 ## FABLE's workflow
 
-PoreChop and NanoFilt are performed on input fastq files, followed by FastQC and NanoPlot for QC analysis and visualisation. Next, alignment results achieved either by Vulcan or Minimap2 can be studied from reports generated. 
+PoreChop and NanoQ are performed on input fastq files, followed by FastQC and NanoPlot for QC analysis and visualisation. Next, alignment results achieved either by Vulcan or Minimap2 can be studied from reports generated. 
 
 * PRE-ALIGNMENT:
     1. PoreChop
       - removes adapters from ONT's reads and merges multiple fastq files if directory is provided as input
-    2. NanoFilt
+    2. NanoQ
       - filters reads depending on their quality + option for headcrop to trim nucleotides from start of read
       - default parameters filters out reads with quality score below 10 and trims the first 10 nucleotides from start of read
     3. FastQC and Pre-alignment NanoPlot
