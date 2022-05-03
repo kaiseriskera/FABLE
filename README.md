@@ -96,4 +96,5 @@ PoreChop and NanoQ are performed on input fastq files, followed by FastQC and Na
       - visualises aligned data for comparison against unaligned data
     2. Generation of Samstats and benchmark reports
       - allows comparison between Vulcan and minimap2
+    3. Bedtools to visualise alignment of reads against reference genome in IGV
     
