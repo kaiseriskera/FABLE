@@ -29,7 +29,8 @@ x_idx = np.arange(df.shape[0])
 
 fig, (ax1,ax2)= plt.subplots(nrows=1, ncols=2, figsize=(12, 4))
 
-c = ['hotpink', 'palevioletred', 'pink', 'plum','thistle','lavender']
+# c = ['hotpink', 'palevioletred', 'pink', 'plum','thistle','lavender']
+c = ['thistle','palevioletred','pink','lavender','lightsteelblue','powderblue']
 
 # bar plot for cpu_time on ax1
 df.plot(x='Process', y='cpu_time', kind='bar', color=c, ax=ax1)
