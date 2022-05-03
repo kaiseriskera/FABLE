@@ -5,15 +5,17 @@
 
 **FABLE is an automated and reproducible snakemake workflow tailored to Oxford Nanopore Sequencing reads. After easy installation with conda, it is straightforward to run on local computers, filtering out and trimming low-quality reads to generate high-quality alignments against a reference genome**
 
-### Pre-requisite
+### Git clone the project from Github
 ```bash
-conda activate snakemake 
+https://github.com/kaiseriskera/ngs_bench.git
+cd ngs_bench
 ```
-make sure your snakemake environment includes the followings:
+### Setup the conda environment
+In order to run the pipeline, make sure all the necessary tools are installed in the conda environment. The environment yaml file can be found in env/environment.yml.
 ```bash
-conda install -c bioconda graphviz nanoplot nanofilt
+conda env create -f ./env/environment.yml
+conda activate fable
 ```
-
 ### Directory Structure
 
 ```
@@ -22,6 +24,8 @@ conda install -c bioconda graphviz nanoplot nanofilt
 │   ├── config.yaml
 ├── dag_mm2.svg
 ├── dag_vulcan.svg
+├── env
+│   └── environment.yml
 ├── LICENSE
 ├── README.md
 ├── workdir_mm2
@@ -36,6 +40,7 @@ conda install -c bioconda graphviz nanoplot nanofilt
     ├── scripts
     │   └── plot_benchmark.py
     └── Snakefile
+
 ```
 
 ### Snakemake
