@@ -7,7 +7,7 @@
 
 ### Git clone the project from Github
 ```bash
-https://github.com/kaiseriskera/ngs_bench.git
+git clone https://github.com/kaiseriskera/ngs_bench.git
 cd ngs_bench
 ```
 ### Setup the conda environment
