@@ -1,7 +1,7 @@
 configfile: "config/config.yaml"
 
 OPT = config["rule_opt"]
-TESTPATH = config["lambda_data"]
+TESTPATH = config["97.5_15k_badreads"]
 ref_genome = config["reference"]
 
 # create work directory differently according to the rule_opt, i.e. workdir_mm2 or workdir_vulcan.
@@ -42,13 +42,12 @@ rule NanoQ:
     output:
         "data/NanoQ/PCNQ_read.fastq.gz"
     params:
-        minquality="10",
+        minquality=config["nanoQ_mbt"],
         outdir="data/NanoQ"
     benchmark:
         "benchmarks/NanoQ.tsv"
     shell:
-        # "nanoq -i {input} -q {params.minquality} > data/NanoQ/PCNQ_read.fastq.gz > report/NanoQ/report.txt"
-        # "gunzip -c {input} | NanoFilt -q {params.quality} --headcrop {params.headcrop} | gzip > {output}"
+        # "nanoq -i {input} -q {params.minquality} -r NanoQ_report.txt > {output}"
         "nanoq -i {input} -q {params.minquality} -o {output} -s -vv" 
 
 rule FastQC:
