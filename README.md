@@ -64,9 +64,15 @@ snakemake --config rule_opt="vulcan" -c8 --dag | dot -Tsvg > dag_vulcan.svg
   <img src="dag_mm2.svg" width="400" />
 </p>
 
-<p align="left">
-  <img src="bench_vulcan.png" width="400" />
-  <img src="bench_mm2.png" width="400" />
+<p align="center">
+  <img src="vulcan_benchmark.png" width="770" height="380"/>
+  
+  
+  
+  
+  
+  
+  <img src="mm2_benchmark.png" width="770" height="380"/>
 </p>
 
 ## FABLE's workflow
@@ -96,4 +102,5 @@ PoreChop and NanoQ are performed on input fastq files, followed by FastQC and Na
       - visualises aligned data for comparison against unaligned data
     2. Generation of Samstats and benchmark reports
       - allows comparison between Vulcan and minimap2
+    3. Bedtools to visualise alignment of reads against reference genome in IGV
     
