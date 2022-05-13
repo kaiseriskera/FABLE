@@ -26,4 +26,11 @@ droso_data: "/datastore/homes3/s1804374/kai_drosophila/fastqgz_files.fastq.gz"
 reference: "/datastore/homes3/s1804374/kai_lambda/J02459.fasta"
 
 # nanoQ minimum quality threshold 
-nanoQ_mbt: "10"
+nanoQ_mbt: 10
+
+# threads to be used for:
+porechop_threads: 12
+fastQC_threads: 8
+Pre_alignment_NanoPlot_threads: 8
+vulcan_threads: 8
+aligned_nanoplot_threads: 8

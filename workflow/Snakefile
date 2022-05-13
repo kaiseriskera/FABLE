@@ -32,10 +32,11 @@ rule Porechop:
         outdir="data/Porechop"
     benchmark:
         "benchmarks/Porechop.tsv"
-    threads: 12
+    threads: config["porechop_threads"]
     shell: 
         "porechop -i {input} -t {threads} -o {output}"
-        
+       
+
 rule NanoQ:
     input: 
         "data/Porechop/PC_read.fastq.gz"
@@ -56,7 +57,7 @@ rule FastQC:
     output:
         "report/FastQC/PCNQ_read_fastqc.html",
         "report/FastQC/PCNQ_read_fastqc.zip"
-    threads: 8
+    threads: config["fastQC_threads"]
     params:
         outdir="report/FastQC"
     benchmark:
@@ -73,7 +74,7 @@ rule Pre_alignment_NanoPlot:
     params:
         prefix="PCNQ_read_",
         outdir="report/Pre-alignment_NanoPlot"
-    threads: 8 
+    threads: config["Pre_alignment_NanoPlot_threads"]
     benchmark:
         "benchmarks/Pre-alignment_NanoPlot.tsv"
     shell:
@@ -88,7 +89,7 @@ if OPT == 'vulcan':
             "data/Vulcan/vulcan_PCNQ_90.bam"
         params:
             prefix="data/Vulcan/vulcan_PCNQ"
-        threads: 10
+        threads: config["vulcan_threads"]
         benchmark:
             "benchmarks/Vulcan.tsv"
         shell:
@@ -111,7 +112,7 @@ if OPT == 'vulcan':
         params:
             prefix="vulcan_PCNQ_",
             outdir="report/Post-alignment_NanoPlot"
-        threads: 8
+        threads: config["aligned_nanoplot_threads"]
         benchmark:
             "benchmarks/Post-alignment_NanoPlot.tsv"
         shell:
@@ -225,7 +226,7 @@ else:
         params:
             prefix="mm2_PCNQ_",
             outdir="report/Post-alignment_NanoPlot/"
-        threads: 8
+        threads: config["aligned_nanoplot_threads"]
         benchmark:
             "benchmarks/Post-alignment_NanoPlot.tsv"
         shell:
