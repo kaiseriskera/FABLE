@@ -1,7 +1,7 @@
 # FABLE ![image](https://user-images.githubusercontent.com/96602087/165528002-a64d46d6-5fb1-4fa4-9d61-8d7ef5cf6ad7.png)
 
 <p align="center">
-  <img width="466" height="380" src="FABLE logo.png">
+  <img width="466" height="380" src="pictures/FABLE logo.png">
 
 **FABLE is an automated and reproducible snakemake workflow tailored to Oxford Nanopore Sequencing reads. After easy installation with conda, it is straightforward to run on local computers, filtering out and trimming low-quality reads to generate high-quality alignments against a reference genome**
 
@@ -59,20 +59,20 @@ To generate DAGs:
 snakemake --config rule_opt="mm2" -c8 --dag | dot -Tsvg > dag_mm2.svg 
 snakemake --config rule_opt="vulcan" -c8 --dag | dot -Tsvg > dag_vulcan.svg
  ```    
-<p align="left">
-  <img src="dag_vulcan.svg" width="400" />
-  <img src="dag_mm2.svg" width="400" />
+<p align="center">
+  <img src="pictures/dag_vulcan.svg" width="500" />
+  <img src="pictures/dag_mm2.svg" width="400" />
 </p>
 
 <p align="center">
-  <img src="vulcan_benchmark.png" width="770" height="380"/>
+  <img src="pictures/vulcan_benchmark.png" width="770" height="380"/>
   
   
   
   
   
   
-  <img src="mm2_benchmark.png" width="770" height="380"/>
+  <img src="pictures/mm2_benchmark.png" width="770" height="380"/>
 </p>
 
 ## FABLE's workflow
