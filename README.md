@@ -1,4 +1,4 @@
-# FABLE ![image](https://user-images.githubusercontent.com/96602087/165528002-a64d46d6-5fb1-4fa4-9d61-8d7ef5cf6ad7.png)
+# FABLE![image](https://user-images.githubusercontent.com/96602087/168489989-b80270ce-8d6f-45d4-8cbc-d82a02fce5ef.png)
 
 <p align="center">
   <img width="466" height="380" src="pictures/FABLE logo.png">
@@ -56,22 +56,34 @@ snakemake --config rule_opt="mm2" -c8
 ### DAG Flow
 To generate DAGs:
 ```bash
-snakemake --config rule_opt="mm2" -c8 --dag | dot -Tsvg > dag_mm2.svg 
 snakemake --config rule_opt="vulcan" -c8 --dag | dot -Tsvg > dag_vulcan.svg
+snakemake --config rule_opt="mm2" -c8 --dag | dot -Tsvg > dag_mm2.svg 
  ```    
-<p align="center">
-  <img src="pictures/dag_vulcan.svg" width="500" />
-  <img src="pictures/dag_mm2.svg" width="400" />
-</p>
+<br/>
+<br/>
+  
+![image](https://user-images.githubusercontent.com/96602087/168490235-ae93f806-cabd-4179-a422-a8a80d4ad0f4.png)
 
 <p align="center">
+  <img src="pictures/dag_vulcan.svg" width="475" />
+  <img src="pictures/dag_mm2.svg" width="475" />
+</p>
+
+<br/>
+<br/>
+
+<p align="center">
+    Overview of CPU time and memory usage by core software tools in FABLE_Vulcan
+</p>
+<p align="center">
   <img src="pictures/vulcan_benchmark.png" width="770" height="380"/>
-  
-  
-  
-  
-  
-  
+
+<br/>
+<br/>
+<p align="center">
+    Overview of CPU time and memory usage by core software tools in FABLE_minimap2
+</p>
+<p align="center">
   <img src="pictures/mm2_benchmark.png" width="770" height="380"/>
 </p>
 
