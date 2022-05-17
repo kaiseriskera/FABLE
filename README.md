@@ -66,8 +66,8 @@ snakemake --config rule_opt="mm2" -c8 --dag | dot -Tsvg > dag_mm2.svg
 ![image](https://user-images.githubusercontent.com/96602087/168490235-ae93f806-cabd-4179-a422-a8a80d4ad0f4.png)
 
 <p align="center">
-  <img src="pictures/dag_vulcan.svg" width="475" />
-  <img src="pictures/dag_mm2.svg" width="475" />
+  <img src="pictures/dag_vulcan.svg" width="450" />
+  <img src="pictures/dag_mm2.svg" width="450" />
 </p>
 
 <br/>
