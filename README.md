@@ -119,5 +119,7 @@ PoreChop and NanoQ are performed on input fastq files, followed by FastQC and Na
     4. Snakemake benchmark reports
       - generates CPU time and memory usage of each core software tool in FABLE_Vulcan and FABLE_minimap2 as bar plots
       - allows comparison of total CPU time and total memory usage of FABLE_Vulcan and FABLE_minimap2 
-    5. Bedtools to visualise alignment of reads against reference genome in IGV
+    5. Alignment visualisation in IGV
+      - BEDTools and bedGraphToBigWig are used to generate bigWig file for displaying graph of read coverage on IGV
+      - BAM files can also be loaded on IGV which depicts individual reads
     
