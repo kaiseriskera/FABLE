@@ -11,6 +11,7 @@ git clone https://github.com/kaiseriskera/FABLE.git
 cd FABLE
 ```
 ### Setup the conda environment
+First, you need to install a Conda-based Python3 distribution. The recommended choice is [Mambaforge](https://github.com/conda-forge/miniforge#mambaforge) which not only provides the required Python and Conda commands, but also includes Mamba an extremely fast and robust replacement for the Conda package manager which is highly recommended.
 In order to run the pipeline, make sure all the necessary tools are installed in the conda environment. The environment yaml file can be found in env/environment.yml.
 ```bash
 conda env create -f ./env/environment.yml
