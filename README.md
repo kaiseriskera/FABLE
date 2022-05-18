@@ -1,7 +1,7 @@
-# FABLE ![image](https://user-images.githubusercontent.com/96602087/165528002-a64d46d6-5fb1-4fa4-9d61-8d7ef5cf6ad7.png)
+# FABLE![image](https://user-images.githubusercontent.com/96602087/168489989-b80270ce-8d6f-45d4-8cbc-d82a02fce5ef.png)
 
 <p align="center">
-  <img width="466" height="380" src="FABLE logo.png">
+  <img width="466" height="380" src="pictures/FABLE logo.png">
 
 **FABLE is an automated and reproducible snakemake workflow tailored to Oxford Nanopore Sequencing reads. After easy installation with conda, it is straightforward to run on local computers, filtering out and trimming low-quality reads to generate high-quality alignments against a reference genome**
 
@@ -28,17 +28,18 @@ conda activate fable
 │   └── environment.yml
 ├── LICENSE
 ├── README.md
-├── workdir_mm2
+├── workdir_{sample name}_mm2
 │   ├── benchmarks
 │   ├── data
 │   └── report
-├── workdir_vulcan
+├── workdir_{sample name}_vulcan
 │   ├── benchmarks
 │   ├── data
 │   └── report
 └── workflow
     ├── scripts
-    │   └── plot_benchmark.py
+    │   ├── mm2_plot_benchmark.py
+    │   └── vulcan_plot_benchmark.py
     └── Snakefile
 
 ```
@@ -56,23 +57,35 @@ snakemake --config rule_opt="mm2" -c8
 ### DAG Flow
 To generate DAGs:
 ```bash
-snakemake --config rule_opt="mm2" -c8 --dag | dot -Tsvg > dag_mm2.svg 
 snakemake --config rule_opt="vulcan" -c8 --dag | dot -Tsvg > dag_vulcan.svg
+snakemake --config rule_opt="mm2" -c8 --dag | dot -Tsvg > dag_mm2.svg 
  ```    
-<p align="left">
-  <img src="dag_vulcan.svg" width="400" />
-  <img src="dag_mm2.svg" width="400" />
-</p>
+<br/>
+<br/>
+  
+![image](https://user-images.githubusercontent.com/96602087/168490235-ae93f806-cabd-4179-a422-a8a80d4ad0f4.png)
 
 <p align="center">
-  <img src="vulcan_benchmark.png" width="770" height="380"/>
-  
-  
-  
-  
-  
-  
-  <img src="mm2_benchmark.png" width="770" height="380"/>
+  <img src="pictures/dag_vulcan.svg" width="450" />
+  <img src="pictures/dag_mm2.svg" width="450" />
+</p>
+
+<br/>
+<br/>
+
+<p align="center">
+    Overview of CPU time and memory usage by core software tools in FABLE_Vulcan
+</p>
+<p align="center">
+  <img src="pictures/vulcan_benchmark.png" width="770" height="380"/>
+
+<br/>
+<br/>
+<p align="center">
+    Overview of CPU time and memory usage by core software tools in FABLE_minimap2
+</p>
+<p align="center">
+  <img src="pictures/mm2_benchmark.png" width="770" height="380"/>
 </p>
 
 ## FABLE's workflow
@@ -83,11 +96,11 @@ PoreChop and NanoQ are performed on input fastq files, followed by FastQC and Na
     1. PoreChop
       - removes adapters from ONT's reads and merges multiple fastq files if directory is provided as input
     2. NanoQ
-      - filters reads depending on their quality + option for headcrop to trim nucleotides from start of read
-      - default parameters filters out reads with quality score below 10 and trims the first 10 nucleotides from start of read
+      - filters reads according to Phred quality (minimum quality threshold can be specified in config.yaml file)
+      - default parameters filters out reads with quality score below 10 
     3. FastQC and Pre-alignment NanoPlot
       - done in parallel
-      - provides QC reports for trimmed and filtered data
+      - provides QC reports for both pre-aligned and aligned data
  
 * ALIGNMENT:
     1. Vulcan
@@ -99,8 +112,14 @@ PoreChop and NanoQ are performed on input fastq files, followed by FastQC and Na
 
 * POST-ALIGNMENT:
     1. Post-alignment NanoPlot
-      - visualises aligned data for comparison against unaligned data
-    2. Generation of Samstats and benchmark reports
-      - allows comparison between Vulcan and minimap2
-    3. Bedtools to visualise alignment of reads against reference genome in IGV
+      - provides detailed statistics and interactive graphs 
+      - can be compared to NanoPlot report for pre-aligned data
+    2. Samtools stats 
+      - produce easily-readable text file with concise alignment statistics e.g. alignment mismatch rates
+    4. Snakemake benchmark reports
+      - generates CPU time and memory usage of each core software tool in FABLE_Vulcan and FABLE_minimap2 as bar plots
+      - allows comparison of total CPU time and total memory usage of FABLE_Vulcan and FABLE_minimap2 
+    5. Alignment visualisation in IGV
+      - BEDTools and bedGraphToBigWig are used to generate bigWig file for displaying graph of read coverage on IGV
+      - BAM files can also be loaded on IGV which depicts individual reads
     
