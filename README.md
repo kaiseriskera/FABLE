@@ -11,6 +11,7 @@ git clone https://github.com/kaiseriskera/FABLE.git
 cd FABLE
 ```
 ### Setup the conda environment
+First, you need to install a Conda-based Python3 distribution. The recommended choice is [Mambaforge](https://github.com/conda-forge/miniforge#mambaforge) which not only provides the required Python and Conda commands, but also includes Mamba an extremely fast and robust replacement for the Conda package manager which is highly recommended.
 In order to run the pipeline, make sure all the necessary tools are installed in the conda environment. The environment yaml file can be found in env/environment.yml.
 ```bash
 conda env create -f ./env/environment.yml
@@ -66,8 +67,8 @@ snakemake --config rule_opt="mm2" -c8 --dag | dot -Tsvg > dag_mm2.svg
 ![image](https://user-images.githubusercontent.com/96602087/168490235-ae93f806-cabd-4179-a422-a8a80d4ad0f4.png)
 
 <p align="center">
-  <img src="pictures/dag_vulcan.svg" width="450" />
-  <img src="pictures/dag_mm2.svg" width="450" />
+  <img src="pictures/dag_vulcan.svg" width="430" />
+  <img src="pictures/dag_mm2.svg" width="430" />
 </p>
 
 <br/>

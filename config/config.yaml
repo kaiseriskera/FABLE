@@ -7,20 +7,20 @@ work_dir_path: "./workdir"
 sample: "87.5_15k"
 
 # path to input fastq file(s)
-77.5_7k_badreads: "/datastore/homes3/s1804374/kai_lambda/badreads/77.5_7k_badreads.fastq.gz"
-77.5_15k_badreads: "/datastore/homes3/s1804374/kai_lambda/badreads/77.5_15k_badreads.fastq.gz"
-77.5_60k_badreads: "/datastore/homes3/s1804374/kai_lambda/badreads/77.5_60k_badreads.fastq.gz"
+77.5_7k_badreads: "../lambda_test_data/77.5_7k_badreads.fastq.gz"
+77.5_15k_badreads: "../lambda_test_data/77.5_15k_badreads.fastq.gz"
+77.5_60k_badreads: "../lambda_test_data/77.5_60k_badreads.fastq.gz"
 
-87.5_7k_badreads: "/datastore/homes3/s1804374/kai_lambda/badreads/87.5_7k_badreads.fastq.gz"
-87.5_15k_badreads: "/datastore/homes3/s1804374/kai_lambda/badreads/87.5_15k_badreads.fastq.gz"
-87.5_60k_badreads: "/datastore/homes3/s1804374/kai_lambda/badreads/87.5_60k_badreads.fastq.gz"
+87.5_7k_badreads: "../lambda_test_data/87.5_7k_badreads.fastq.gz"
+87.5_15k_badreads: "../lambda_test_data/87.5_15k_badreads.fastq.gz"
+87.5_60k_badreads: "../lambda_test_data/87.5_60k_badreads.fastq.gz"
 
-97.5_7k_badreads: "/datastore/homes3/s1804374/kai_lambda/badreads/97.5_7k_badreads.fastq.gz"
-97.5_15k_badreads: "/datastore/homes3/s1804374/kai_lambda/badreads/97.5_15k_badreads.fastq.gz"
-97.5_60k_badreads: "/datastore/homes3/s1804374/kai_lambda/badreads/97.5_60k_badreads.fastq.gz"
+97.5_7k_badreads: "../lambda_test_data/97.5_7k_badreads.fastq.gz"
+97.5_15k_badreads: "../lambda_test_data/97.5_15k_badreads.fastq.gz"
+97.5_60k_badreads: "../lambda_test_data/97.5_60k_badreads.fastq.gz"
 
 #  path to reference genome
-reference: "/datastore/homes3/s1804374/kai_lambda/J02459.fasta"
+reference: "../lambda_test_data/lambda_reference_genome.fasta"
 
 # nanoQ minimum quality threshold 
 nanoQ_mbt: 10
