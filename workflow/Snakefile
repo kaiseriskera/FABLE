@@ -1,7 +1,7 @@
 configfile: "config/config.yaml"
 
 OPT = config["rule_opt"]
-TESTPATH = config["97.5_15k_badreads"]
+TESTPATH = config["97.5_7k_badreads"]
 ref_genome = config["reference"]
 
 # create work directory differently according to the rule_opt, i.e. workdir_mm2 or workdir_vulcan.
@@ -236,7 +236,7 @@ else:
         input:
             "data/Minimap2/mm2_PCNQ.bam"
         output:
-            "data/GenomeCov/mm2_PCNQ_90.bdg"
+            "data/GenomeCov/mm2_PCNQ.bdg"
         shell:
             "bedtools genomecov -ibam {input} -bg > {output}"
     
@@ -251,7 +251,7 @@ else:
     rule mm2_bedGraphtobigWig:
         input:
             chrsize = "data/GenomeCov/chromSizes.txt",
-            bedgraph = "data/GenomeCov/mm2_PCNQ_90.bdg"
+            bedgraph = "data/GenomeCov/mm2_PCNQ.bdg"
         output:
             "data/GenomeCov/Aligned_bigwig.bw"
         shell:
